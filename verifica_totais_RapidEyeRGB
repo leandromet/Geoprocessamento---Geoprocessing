@@ -1,0 +1,51 @@
+#-------------------------------------------------------------------------------
+# Name:        Verifica Arquivos com Saidas rapideye
+# Purpose:      conferencia de execucao
+#
+# Author:      leandro.biondo
+#
+# Created:     07/08/2013
+# Copyright:   (c) leandro.biondo 2013
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
+#!/usr/bin/env python
+
+# importar modulos
+
+import datetime
+import os, glob
+import os.path
+import fileinput
+import sys
+import string
+import shutil
+
+
+
+
+comsaida=0
+semarquivo=0
+
+hoje = datetime.datetime.today()
+print hoje.strftime('Executado %Y/%m/%d %H:%M:%S')
+#Laco que encontra todos os arquivos TIF a serem processados
+for infile in glob.glob('U:\\imagens2\\RapidEye\\NORDESTE\\FUSO_24S\\*\\*.tif'):
+#Ignora arquivos "browse."
+    if infile.find("browse.") == -1:
+#Ignora arquivos "udm."
+        if infile.find("udm.") == -1:
+#Verifica arquivo de entrada, cria arquivo de saida a partir do de entrada
+                outfile = infile.replace('.tif', 'rgb.tif')
+                outfile = outfile.replace('U:\\imagens2\\RapidEye\\NORDESTE\\', 'W:\\IMAGENS\\RapidEye\\NE\\')
+#Verifica se pasta da Ginf tem imagem processada
+                if os.path.isfile(outfile):
+                    comsaida=comsaida+1
+                else:
+                    semarquivo= semarquivo+1
+
+print 'arquivos ja criados'
+print comsaida
+print 'nao processados'
+print semarquivo
+
+#-------------------------------------------------------------------------------
