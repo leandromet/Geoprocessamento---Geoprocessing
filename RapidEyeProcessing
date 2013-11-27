@@ -1,0 +1,113 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Customized processing of RapidEye Images, get 1 image, generates the RED and NIR composites
+then selects the center of the image, cuts 2 new images with a determined size
+and generates a new image with the NDVI calculates, last simple statistisc
+"""
+import os
+import sys
+import optparse
+import numpy as np
+
+from osgeo import gdal
+
+def calculate_ndvi ( red_filename, nir_filename ):
+    """
+    A function to calculate the Normalised Difference Vegetation Index
+    from red and near infrarred reflectances. The reflectance data ought to
+    be present on two different files, specified by the varaibles
+    `red_filename` and `nir_filename`. The file format ought to be
+    recognised by GDAL
+    """
+
+    g_red = gdal.Open ( red_filename )
+    red = g_red.ReadAsArray()
+    g_nir = gdal.Open ( nir_filename )
+    nir = g_nir.ReadAsArray()
+    if ( g_red.RasterXSize != g_nir.RasterXSize ) or \
+            ( g_red.RasterYSize != g_nir.RasterYSize ):
+        print "ERROR: Input datasets do't match!"
+        print "\t Red data shape is %dx%d" % ( red.shape )
+        print "\t NIR data shape is %dx%d" % ( nir.shape )
+
+        sys.exit ( -1 )
+    passer = np.logical_and ( red > 1, nir > 1 )
+    ndvi = np.where ( passer,  (1.*nir - 1.*red ) / ( 1.*nir + 1.*red ), -999 )
+    return ndvi
+
+def save_raster ( output_name, raster_data, dataset, driver="GTiff" ):
+    """
+    A function to save a 1-band raster using GDAL to the file indicated
+    by ``output_name``. It requires a GDAL-accesible dataset to collect
+    the projection and geotransform.
+    """
+
+    # Open the reference dataset
+    g_input = gdal.Open ( dataset )
+    # Get the Geotransform vector
+    geo_transform = g_input.GetGeoTransform ()
+    x_size = g_input.RasterXSize # Raster xsize
+    y_size = g_input.RasterYSize # Raster ysize
+    srs = g_input.GetProjectionRef () # Projection
+    # Need a driver object. By default, we use GeoTIFF
+    if driver == "GTiff":
+        driver = gdal.GetDriverByName ( driver )
+        dataset_out = driver.Create ( output_name, x_size, y_size, 1, \
+                gdal.GDT_Float32, ['TFW=YES', \
+                'COMPRESS=LZW', 'TILED=YES'] )
+    else:
+        driver = gdal.GetDriverByName ( driver )
+        dataset_out = driver.Create ( output_name, x_size, y_size, 1, \
+                gdal.GDT_Float32 )
+
+    dataset_out.SetGeoTransform ( geo_transform )
+    dataset_out.SetProjection ( srs )
+    dataset_out.GetRasterBand ( 1 ).WriteArray ( \
+            raster_data.astype(np.float32) )
+    dataset_out.GetRasterBand ( 1 ).SetNoDataValue ( float(-999) )
+    dataset_out = None
+
+if __name__ == "__main__":
+
+    os.system("gdal_translate -b 3 //home//leandro//GINF//2226813_2011-07-16T143934_RE5_3A-NAC_7033379_139849.tif //home//leandro//GINF//red2.tif")
+    os.system("gdal_translate -b 5 //home//leandro//GINF//2226813_2011-07-16T143934_RE5_3A-NAC_7033379_139849.tif //home//leandro//GINF//nir2.tif")
+
+
+
+#Corte das imagens
+    redf = gdal.Open( "//home//leandro//GINF//red2.tif")
+    geotransform = redf.GetGeoTransform()
+    if not geotransform is None:
+#Dados da imagem referencia
+        print 'Origin = (',geotransform[0], ',',geotransform[3],')'
+        print 'Pixel Size = (',geotransform[1], ',',geotransform[5],')'
+    print 'Size is ',redf.RasterXSize,'x',redf.RasterYSize, \
+          'x',redf.RasterCount
+    print 'Projection is ',redf.GetProjection()
+
+#Ponto para corte, no caso o centro da imagem pelos seus dados
+    redmeio = (float(geotransform[0]+redf.RasterXSize*5/2-1000), float(geotransform[3]-redf.RasterYSize*5/2))
+    print redmeio
+    redcorte = (map(sum,zip(redmeio,(-150,-150))), map(sum,zip(redmeio,(150,150))))
+    print redcorte
+#Corte imagem RED
+    os.system("gdalwarp -overwrite -te "+str(redcorte[0][0])+" "+str(redcorte[0][1])+" "\
+    +str(redcorte[1][0])+" "+str(redcorte[1][1])+\
+    " //home//leandro//GINF//red2.tif //home//leandro//GINF//red2_cut.tif")
+#Corte imagem NIR
+    os.system("gdalwarp -overwrite -te "+str(redcorte[0][0])+" "+str(redcorte[0][1])+" "\
+    +str(redcorte[1][0])+" "+str(redcorte[1][1])+\
+    " //home//leandro//GINF//nir2.tif //home//leandro//GINF//nir2_cut.tif")
+
+#Calculo NDVI do corte RED/NIR
+    c_ndvi = calculate_ndvi ( "//home//leandro//GINF//red2_cut.tif", "//home//leandro//GINF//nir2_cut.tif" )
+    save_raster ( "//home//leandro//GINF//ndvi2_cutdes.tif", c_ndvi,\
+    "//home//leandro//GINF//red2_cut.tif", "GTiff" )
+
+#Estatisticas do resultado
+    src_ds = gdal.Open("//home//leandro//GINF//ndvi2_cutdes.tif")
+    srcband = src_ds.GetRasterBand(1)
+    stats = srcband.GetStatistics( True, True )
+    print "[ STATS ] =  Minimum=%.3f, Maximum=%.3f, Mean=%.3f, StdDev=%.3f" % ( \
+                stats[0], stats[1], stats[2], stats[3] )
