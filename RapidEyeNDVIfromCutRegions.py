@@ -14,13 +14,11 @@
 """
 import os
 import sys
-import optparse
 import numpy as np
 
 from osgeo import gdal
 from osgeo import ogr
 
-from osgeo import osr
 import glob
 
 def calculate_ndvi ( red_filename, nir_filename ):
@@ -82,8 +80,6 @@ def save_raster ( output_name, raster_data, dataset, driver="GTiff" ):
 def prep_cut_call (caminhoi, imagemtif, ptcenter, TileId):
 # "Funcao que prepara um TIF e calcula o NDVI para uma area relacionada  um ponto central"
 
-#Corte da imagem
-    redf = gdal.Open( "%s" %imagemtif)
 #Ponto para corte, no caso o centro da imagem pelos seus dados
     redcorte = (map(sum,zip(ptcenter,(-150,-150))), map(sum,zip(ptcenter,(150,150))))
 #    print redcorte
