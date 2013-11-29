@@ -82,22 +82,20 @@ def save_raster ( output_name, raster_data, dataset, driver="GTiff" ):
 def prep_cut_call (caminhoi, imagemtif, ptcenter, TileId):
 # "Funcao que prepara um TIF e calcula o NDVI para uma area relacionada  um ponto central"
 
-    os.system("gdal_translate -b 3 %s %sred2.tif" %(imagemtif, caminhoi))
-    os.system("gdal_translate -b 5 %s %snir2.tif" %(imagemtif, caminhoi))
-
-#Corte das imagens
-    redf = gdal.Open( "%sred2.tif" %caminhoi)
+#Corte da imagem
+    redf = gdal.Open( "%s" %imagemtif)
 #Ponto para corte, no caso o centro da imagem pelos seus dados
     redcorte = (map(sum,zip(ptcenter,(-150,-150))), map(sum,zip(ptcenter,(150,150))))
 #    print redcorte
-#Corte imagem RED
+#Corte imagem 
     os.system("gdalwarp -overwrite -te "+str(redcorte[0][0])+" "+str(redcorte[0][1])+" "\
     +str(redcorte[1][0])+" "+str(redcorte[1][1])+\
-    " %sred2.tif %sred2_cut.tif"%(caminhoi, caminhoi))
-#Corte imagem NIR
-    os.system("gdalwarp -overwrite -te "+str(redcorte[0][0])+" "+str(redcorte[0][1])+" "\
-    +str(redcorte[1][0])+" "+str(redcorte[1][1])+\
-    " %snir2.tif %snir2_cut.tif"%(caminhoi, caminhoi))
+    " %s %sRD_cut.tif"%(imagemtif, caminhoi))
+    
+    os.system("gdal_translate -b 3 %sRD_cut.tif %sred2_cut.tif" %(caminhoi, caminhoi))
+    os.system("gdal_translate -b 5 %sRD_cut.tif %snir2_cut.tif" %(caminhoi, caminhoi))
+
+
 #Calculo NDVI do corte RED/NIR
     c_ndvi = calculate_ndvi ( "%sred2_cut.tif"%caminhoi, "%snir2_cut.tif"%caminhoi)
     save_raster ( "%sndvi2_cutdes%s.tif"%(caminhoi,TileId), c_ndvi,\
@@ -109,7 +107,12 @@ def prep_cut_call (caminhoi, imagemtif, ptcenter, TileId):
 #    print "[ STATS ] =  Minimum=%.5f, Maximum=%.5f, Mean=%.5f, StdDev=%.5f" % ( \
     return (stats[0], stats[1], stats[2], stats[3] )
 
-#Main
+
+
+
+
+
+
 
 if __name__ == "__main__":
 
