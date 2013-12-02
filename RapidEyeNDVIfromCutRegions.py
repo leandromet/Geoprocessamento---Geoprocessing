@@ -21,6 +21,8 @@ from osgeo import ogr
 
 import glob
 
+
+#Funcao para calculo do NDVI, externa
 def calculate_ndvi ( red_filename, nir_filename ):
     """
     A function to calculate the Normalised Difference Vegetation Index
@@ -45,6 +47,8 @@ def calculate_ndvi ( red_filename, nir_filename ):
     ndvi = np.where ( passer,  (1.*nir - 1.*red ) / ( 1.*nir + 1.*red ), -999 )
     return ndvi
 
+
+#Funcao para salvar um raster em formato de imagem
 def save_raster ( output_name, raster_data, dataset, driver="GTiff" ):
     """
     A function to save a 1-band raster using GDAL to the file indicated
@@ -77,30 +81,33 @@ def save_raster ( output_name, raster_data, dataset, driver="GTiff" ):
     dataset_out.GetRasterBand ( 1 ).SetNoDataValue ( float(-999) )
     dataset_out = None
 
-def prep_cut_call (caminhoi, imagemtif, ptcenter, TileId):
-# "Funcao que prepara um TIF e calcula o NDVI para uma area relacionada  um ponto central"
 
-#Ponto para corte, no caso o centro da imagem pelos seus dados
-    redcorte = (map(sum,zip(ptcenter,(-150,-150))), map(sum,zip(ptcenter,(150,150))))
-#    print redcorte
-#Corte imagem 
+# Funcao que prepara um TIF e calcula o NDVI para uma area relacionada  um ponto central
+# Entradas: caminhoi = caminho da pasta de trabalho, imagemtif = imagem que sera processada
+#           ptcenter = Ponto central da area a ser considerada, TileId = Identificador do Grid RapidEye
+#           distamost = distancia a ser considerada para amostragem, metade do comprimento de amostragem
+def prep_cut_call (caminhoi, imagemtif, ptcenter, TileId, distamost):
+
+
+#Ponto para corte, utilizando o ponto informado. 
+    redcorte = (map(sum,zip(ptcenter,(-1*distamost,-1*distamost))), map(sum,zip(ptcenter,(distamost,distamost))))
+#Corte imagem com comprimento e altura 2 vezes a variável distamost
     os.system("gdalwarp -overwrite -te "+str(redcorte[0][0])+" "+str(redcorte[0][1])+" "\
     +str(redcorte[1][0])+" "+str(redcorte[1][1])+\
     " %s %sRD_cut.tif"%(imagemtif, caminhoi))
-    
+#criadas 2 imagens temporárias com as bandas NIR e RED separadas, para calculo do NDVI
     os.system("gdal_translate -b 3 %sRD_cut.tif %sred2_cut.tif" %(caminhoi, caminhoi))
     os.system("gdal_translate -b 5 %sRD_cut.tif %snir2_cut.tif" %(caminhoi, caminhoi))
 
 
-#Calculo NDVI do corte RED/NIR
+#Calculo NDVI do corte RED/NIR, criada imagem com dados de NDVI calculados
     c_ndvi = calculate_ndvi ( "%sred2_cut.tif"%caminhoi, "%snir2_cut.tif"%caminhoi)
     save_raster ( "%sndvi2_cutdes%s.tif"%(caminhoi,TileId), c_ndvi,\
     "%sred2_cut.tif"%caminhoi, "GTiff" )
-#Estatisticas do resultado
+#Estatisticas do resultado, devolvidas estatísticas básicas para a funcao.
     src_ds = gdal.Open("%sndvi2_cutdes%s.tif"%(caminhoi,TileId))
     srcband = src_ds.GetRasterBand(1)
     stats = srcband.GetStatistics(0,1)
-#    print "[ STATS ] =  Minimum=%.5f, Maximum=%.5f, Mean=%.5f, StdDev=%.5f" % ( \
     return (stats[0], stats[1], stats[2], stats[3] )
 
 
@@ -125,34 +132,41 @@ shapefile2 = "//home//leandro//GINF//pr_RapidEye_wgs84b.shp"
 dataSource2 = driver.Open(shapefile2, 0)
 layer2 = dataSource2.GetLayer()
 c5 = 0
+
+# Laco para percorrer as imagens do Grid RapidEye
 for feature2 in layer2:
     c = 0
     dentro = 0
     geom2 = feature2.GetGeometryRef()
     TileId = int(feature2.GetField("TILE_ID"))
+# Laco para percorrer os pontos de amostragem, usa os centroides como ponto de comparacao
     for feature in layer:
         geom = feature.GetGeometryRef()
         pt = geom.Centroid()
         ptcenter = (pt.GetX(), pt.GetY())
-#        print ptcenter
+#  Teste para verificar se cada ponto central do shape de amostragens intercepta o shape do mosaico RapidEye
         if pt.Intersects(geom2):
             dentro+=1
-#            print ptcenter
-            #Laco que encontra todos os arquivos TIF a serem processados
+#Laco que encontra todos os arquivos TIF a serem processados conforme a identificacao no mosico RapidEye
             for infile in glob.glob(r'/mnt/hgfs/Biondo/GINF/Florestas_Parana/Imagens_RapidEye/*%s*.tif'%TileId):
             #Ignora arquivos "browse."
                 if infile.find("browse.") == -1:
             #Ignora arquivos "udm."
                     if infile.find("udm.") == -1:
-#                        print infile
+#Imagem TIF que sera cortada, ter as bandas NIR e RED separadas e calculado o seu NDVI
                         imagemtif = infile
-                        Statistica = prep_cut_call (caminhoi, imagemtif, ptcenter, TileId)
+            #Execucao das funcoes tomando como entrada os dados resultantes da filtragem pelos pontos.
+                        Statistica = prep_cut_call (caminhoi, imagemtif, ptcenter, TileId, 150)
+            # Estatísticas simples do arquivo NDVI do corte em torno do ponto de amostragem
                         print TileId, "(Min, Max, Mean, StDv)", Statistica
+# Limite para evitar que todos os pontos e imagens sejam processados, comentar para processar todos os dados
                         c5+=1
                         if c5>5:
                             exit(0)
         c+=1
+#Importante, resta a leitura do shape de amostragem para que ele possa ser percorrido novamente no próximo Tile do R-E
     layer.ResetReading()
     print "Pontos: %i sendo %i contidas e %i nao" %( c, dentro, (c-dentro))
+#Apenas indica quais feições do RapidEye Grid continham pontos de amostragem.
     if dentro > 0:
         print TileId
