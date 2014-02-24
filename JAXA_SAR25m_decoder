@@ -91,7 +91,7 @@ def exporta_alos_geoTIFF(arquivo, destino, refer):
 
 # convolution of a 9x9 matrix with center wight 2 for attenuation of noise
 
-    med25 = np.array([[1,1,1],[1,2,1],[1,1,1]])
+    med25 = np.array([[0.0625,0.0625,0.0625],[0.0625,0.5,0.0625],[0.0625,0.0625,0.0625]])
     convolucao = ndimage.convolve(npr,med25)
     dst_ds.GetRasterBand(1).WriteArray(convolucao)
 
