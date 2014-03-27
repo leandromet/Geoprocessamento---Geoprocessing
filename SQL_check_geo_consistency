@@ -1,0 +1,203 @@
+SQL
+
+
+
+
+#FUNCAO PARA VALIDACAO E INCLUSAO DE UPA NA UMF, RETORNA TRUE SE VALIDADO (COPIA REGISTROS PARA TABELA sde.scc_upa) E FALSE SE NÃO VALIDADO. DEVOLVE O PORCENTUAL DE ÁREA FORA DA UMF E QUANTAS UPA EXISTENTES ELE SE SOBREPÕE
+
+CREATE OR REPLACE FUNCTION sde.scc_val_upa(tole float, OUT pn boolean, OUT v_umf float, OUT v_upa integer) AS $$
+DECLARE valida numeric;
+DECLARE valida2 numeric;
+DECLARE valida3 numeric;
+DECLARE org RECORD;
+DECLARE orgupa sde.scc_upa%rowtype;
+BEGIN
+	valida := (SELECT (1 - ST_Area(ST_Intersection(temp_upa.shape, temp_umf.shape)) / ST_Area(temp_upa.shape))
+			FROM temp_upa, temp_umf 
+			WHERE ST_Intersects(temp_upa.shape, temp_umf.shape)
+		   );
+	org := (SELECT (num_upa , area_ha , shape) 
+			FROM sde.temp_upa
+		);
+	IF valida < (0.05-$1)
+		THEN 
+			valida3 := 0;
+			FOR orgupa IN SELECT * FROM sde.scc_upa
+				LOOP
+					valida2 := (SELECT (ST_Area(ST_Intersection(temp_upa.shape, orgupa.shape)) / ST_Area(temp_upa.shape))
+						     FROM temp_upa 
+						     WHERE ST_Intersects(temp_upa.shape, orgupa.shape)
+						   );
+					IF valida2 > (0.05-$1)
+						THEN
+							valida3 := valida3+1;
+					END IF;
+				END LOOP;
+			IF valida3 = 0
+				THEN
+					INSERT INTO sde.scc_upa (num_upa, area_ha, shape, num_umf) 
+					VALUES(org.f1, org.f2, org.f3, (SELECT temp_umf.num_umf FROM temp_umf));
+			END IF;
+	END IF;
+	v_umf := valida;
+	v_upa := valida3;
+	IF valida < (0.05-$1) AND valida3 = 0
+		THEN 
+			pn := TRUE;
+	ELSE
+		pn := FALSE;
+	END IF;
+END;
+$$LANGUAGE plpgsql;
+
+
+
+
+SELECT * FROM sde.scc_val_upa(0.0);
+
+
+
+
+#FUNCAO PARA VALIDACAO E INCLUSAO DE DAS ÁRVORES NA UPA SE RETORNA "0", VALIDADO E COPIADOS OS REGISTROS PARA TABELA sde.scc_arvores, RETORNA NÚMERO DE ÁRVORES FORA DA TOLERâNCIA SE NÃO VÁLIDO. RETORNA TOTAL DE ÁRVORES REPETIDAS CASO HAJA REGISTROS IGUAIS AOS QUE SE ESTÁ TENTANDO INSERIR. NÃO ATUALIZA OS EXISTENTES, APENAS INCLUI OS NÃO EXISTENTES.
+
+CREATE OR REPLACE FUNCTION sde.scc_val_arvore(tole float, OUT fora_tolerancia numeric, OUT repetido numeric) AS $$
+
+DECLARE org sde.temp_arvores%rowtype;
+
+BEGIN
+	fora_tolerancia := (SELECT count(temp_arvores.gid) FROM temp_arvores, temp_upa WHERE NOT ST_Intersects(temp_upa.shape, temp_arvores.shape) AND ST_Distance(temp_upa.shape, temp_arvores.shape) > (20-$1));
+	IF fora_tolerancia = 0
+		THEN
+				
+				repetido:=(SELECT count(sde.scc_arvores.objectid)
+				    FROM sde.scc_arvores, temp_arvores
+				    WHERE sde.scc_arvores.num_upa=sde.temp_arvores.num_upa
+				    AND sde.scc_arvores.num_ut=sde.temp_arvores.num_ut
+				    AND sde.scc_arvores.num_arvore=sde.temp_arvores.num_arvore
+				    AND sde.scc_arvores.x=sde.temp_arvores.x
+				    AND sde.scc_arvores.y=sde.temp_arvores.y
+				    AND sde.scc_arvores.num_umf=(SELECT temp_umf.num_umf FROM temp_umf)
+				  );
+				INSERT INTO sde.scc_arvores (num_upa, nom_cient, nom_com, dap_m, altura_m, volume_m3, categoria, x, y, num_ut, num_arvore, shape, num_umf) 
+	              		(SELECT sde.temp_arvores.num_upa, sde.temp_arvores.nom_cient, sde.temp_arvores.nom_com, sde.temp_arvores.dap_m, sde.temp_arvores.altura_m, sde.temp_arvores.volume_m3, sde.temp_arvores.categoria, sde.temp_arvores.x, sde.temp_arvores.y, sde.temp_arvores.num_ut, sde.temp_arvores.num_arvore, sde.temp_arvores.shape, temp_umf.num_umf
+				  FROM temp_umf, sde.temp_arvores
+				  WHERE NOT EXISTS 
+				  (SELECT sde.scc_arvores.num_upa,sde.scc_arvores.num_arvore,sde.scc_arvores.num_umf
+				    FROM sde.scc_arvores, temp_arvores
+				    WHERE sde.scc_arvores.num_upa=sde.temp_arvores.num_upa
+				    AND sde.scc_arvores.num_ut=sde.temp_arvores.num_ut
+				    AND sde.scc_arvores.num_arvore=sde.temp_arvores.num_arvore
+				    AND sde.scc_arvores.x=sde.temp_arvores.x
+				    AND sde.scc_arvores.y=sde.temp_arvores.y
+				    AND sde.scc_arvores.num_umf=(SELECT temp_umf.num_umf FROM temp_umf)
+				  )
+				 );
+			
+	END IF;
+END;
+$$LANGUAGE plpgsql;
+
+
+
+
+SELECT * FROM sde.scc_val_arvore(20);
+
+
+
+
+
+
+#FUNCAO PARA VALIDACAO E INCLUSAO DE ESTRADAS NA UMF SE RETORNA "1" (est_val) SE VALIDADO E SÃO COPIADOS OS REGISTROS PARA TABELA sde.scc_estradas, RETORNA NÚMERO DE ESTRADAS FORA DA UMF SE NÃO VÁLIDO. CASO AS ESTRADAS VALIDADAS JÁ EXISTAM, DEVOLVE O NÚMERO DE ESTRADAS REPETIDAS (est_rep).
+
+CREATE OR REPLACE FUNCTION sde.scc_val_estradas(tole float, OUT est_val numeric, OUT est_rep numeric) AS $$
+
+DECLARE org sde.temp_estradas%rowtype;
+
+BEGIN
+	est_rep := 0;
+	est_val := (SELECT count(temp_estradas.gid) FROM temp_estradas, temp_umf WHERE NOT ST_Intersects(temp_umf.shape, temp_estradas.shape) AND ST_Distance(temp_umf.shape, temp_estradas.shape) > ($1));
+	IF est_val = 0
+		THEN
+				est_val = 1;
+				est_rep := est_rep+(SELECT count(temp_estradas.gid) FROM sde.scc_estradas, sde.temp_estradas 
+				  WHERE sde.scc_estradas.comp_m=sde.temp_estradas.comp_m
+					AND sde.scc_estradas.tipo=sde.temp_estradas.tipo);
+				INSERT INTO sde.scc_estradas(num_upa, comp_m, tipo, shape) 
+	              		(SELECT temp_estradas.num_upa, temp_estradas.comp_m, temp_estradas.tipo, temp_estradas.shape
+				  FROM temp_estradas
+				  WHERE NOT EXISTS (SELECT sde.scc_estradas.num_upa, sde.scc_estradas.comp_m, sde.scc_estradas.shape FROM sde.scc_estradas, sde.temp_estradas 
+				  WHERE sde.scc_estradas.comp_m=sde.temp_estradas.comp_m
+					AND sde.scc_estradas.tipo=sde.temp_estradas.tipo)
+				);
+				
+	END IF;
+END;
+$$LANGUAGE plpgsql;
+
+
+SELECT * FROM sde.scc_val_estradas(0.0);
+
+
+
+
+#FUNCAO PARA VALIDACAO E INCLUSAO DE PATIOS DE ESTOCAGEM NA UMF SE RETORNA "0" SE VALIDADO E SÃO COPIADOS OS REGISTROS PARA TABELA sde.scc_patios_estocagem, RETORNA NÚMERO DE PÁTIOS FORA DA UMF SE NÃO VÁLIDO. SE VÁLIDO E HOUVER PÁTIOS REPETIDOS, RETONA O TOTAL.
+
+CREATE OR REPLACE FUNCTION sde.scc_val_patios_estocagem(tole float, OUT fora_umf numeric, OUT repetidos numeric) AS $$
+
+DECLARE org sde.temp_patios%rowtype;
+BEGIN
+	fora_umf := (SELECT count(temp_patios.gid) FROM temp_patios, temp_umf WHERE NOT ST_Intersects(temp_umf.shape, temp_patios.shape) AND ST_Distance(temp_umf.shape, temp_patios.shape) > ($1));
+	IF fora_umf = 0
+		THEN
+				repetidos:=(SELECT count(sde.scc_patios_estocagem.objectid) FROM sde.temp_patios, sde.scc_patios_estocagem
+				    WHERE temp_patios.num_upa=scc_patios_estocagem.num_upa AND temp_patios.cod_pat=scc_patios_estocagem.cod_pat
+				);
+
+				INSERT INTO sde.scc_patios_estocagem(num_upa, cod_pat, shape) 
+	              		(SELECT sde.temp_patios.num_upa, sde.temp_patios.cod_pat, sde.temp_patios.shape
+				 FROM temp_patios
+				  WHERE NOT EXISTS 
+				  (SELECT sde.scc_patios_estocagem.num_upa, sde.scc_patios_estocagem.cod_pat FROM sde.temp_patios, sde.scc_patios_estocagem
+				    WHERE temp_patios.num_upa=scc_patios_estocagem.num_upa AND temp_patios.cod_pat=scc_patios_estocagem.cod_pat
+				  )
+				);
+
+	END IF;
+
+END;
+$$LANGUAGE plpgsql;
+
+
+SELECT * FROM sde.scc_val_patios_estocagem(0.0);
+
+
+
+
+#FUNCAO PARA VALIDACAO E INCLUSAO DE PARCELAS PERMANENTES NA UMF SE RETORNA "0" SE VALIDADO E SÃO COPIADOS OS REGISTROS PARA TABELA sde.scc_parcelas, RETORNA NÚMERO DE PARCELAS FORA DA UMF SE NÃO VÁLIDO. SE VÁLIDO E HOUVER PARCELAS REPETIDAS, RETORNA O TOTAL.
+
+CREATE OR REPLACE FUNCTION sde.scc_val_parcelas(tole float, OUT fora_umf numeric, OUT repetidos numeric)  AS $$
+
+
+DECLARE org sde.temp_parcelas%rowtype;
+BEGIN
+	fora_umf := (SELECT count(temp_parcelas.gid) FROM temp_parcelas, temp_umf WHERE NOT ST_Intersects(temp_umf.shape, temp_parcelas.shape) AND ST_Distance(temp_umf.shape, temp_parcelas.shape) > ($1));
+	IF fora_umf = 0
+		THEN
+			
+				INSERT INTO sde.scc_parcelas_permanentes(num_upa, cod_par, shape) 
+	              		(SELECT org.num_upa, org.cod_par, org.shape
+				   FROM temp_parcelas
+				  WHERE NOT EXISTS
+				   (SELECT sde.scc_parcelas_permanentes.num_upa, sde.scc_parcelas_permanentes.cod_par FROM sde.temp_parcelas, sde.scc_parcelas_permanentes
+				    WHERE temp_parcelas.num_upa=scc_parcelas_permanentes.num_upa AND temp_parcelas.cod_par=scc_parcelas_permanentes.cod_par
+				  )
+				);
+			
+	END IF;
+
+END;
+$$LANGUAGE plpgsql;
+
+
+SELECT * FROM sde.scc_val_parcelas(0.0);
+
