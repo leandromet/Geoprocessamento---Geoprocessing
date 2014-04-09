@@ -46,3 +46,15 @@ def extract(in_file, out_file, filter_field, filter_values):
 
     in_ds = None
     out_ds = None
+
+
+def filter_func(value, filter_values):
+    '''
+    The custom filter function. In this case, we chack that the value is in the
+    value list, stripping the white spaces. In the case of numeric values, a
+    comparaison could be done
+    '''
+    if value.strip() in filter_values:
+        return True
+    else:
+        return False
