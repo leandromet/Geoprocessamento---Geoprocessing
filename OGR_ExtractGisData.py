@@ -1,3 +1,6 @@
+
+import ogr
+
 def extract(in_file, out_file, filter_field, filter_values):
     '''
     Opens the input file, copies it into the oputput file, checking
