@@ -1,4 +1,3 @@
-
 #python function to export ALOS binary data. Receives a file name, destiny path, reference tag on name for coordinates and a binary to invert the mask
 def export_alos(arquivo, destino, refer, bino):
 
