@@ -1,0 +1,59 @@
+##http://geo.florestal.gov.br/arcgis/scc_mapa_topo.html?lon=-63.005&lat=-9.075
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=7" />
+<title>ArcGIS JavaScript API: scc/SCC_mapa</title>
+
+
+
+
+<style type="text/css"> @import "http://serverapi.arcgisonline.com/jsapi/arcgis/3.3/js/dojo/dijit/themes/tundra/tundra.css";
+@import "http://serverapi.arcgisonline.com/jsapi/arcgis/3.3/js/esri/css/esri.css";
+@import "/arcgis/rest/static/jsapi.css";
+</style> <script type="text/javascript"> var djConfig = { parseOnLoad: true };
+</script> <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.3"> </script> <script type="text/javascript"> dojo.require("dijit.layout.BorderContainer");
+dojo.require("dijit.layout.ContentPane");
+dojo.require("esri.map");
+showArcGISBasemaps = true
+var map;
+
+function centro(str)
+{
+
+var longit = str.substring(str.lastIndexOf("lon=")+4,str.indexOf("&l")) ;
+var latit = str.substring(str.lastIndexOf("lat=")+4) ;
+
+return[parseFloat(longit),parseFloat(latit)];
+
+}
+
+function init() {
+
+	map = new esri.Map("map", {basemap:'topo',center: centro(window.location.href), zoom: 13});
+          var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://geo.florestal.gov.br/arcgis/rest/services/scc/SCC_mapa5/MapServer");
+          map.addLayer(layer);
+    var resizeTimer;
+    dojo.connect(map, 'onLoad', function(theMap) {
+      dojo.connect(dijit.byId('map'), 'resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+          map.resize();
+          map.reposition();
+         }, 500);
+       });
+     });
+    }
+document.write(centro(window.location.href));
+dojo.addOnLoad(init);
+
+
+</script> </head> <body class="tundra"> <div dojotype="dijit.layout.BorderContainer" design="headline" gutters="true" style="width: 800px; height: 600px; margin: 0;"> <div id="map" dojotype="dijit.layout.ContentPane" region="center"> </div> </div> </body>
+
+
+</html>
+
