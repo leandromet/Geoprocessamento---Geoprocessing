@@ -1,6 +1,7 @@
 # Gets a group of PALSAR unigned int 16bit dataset and returns
 # a 32bit float GeoTIFF image in DB values then filters
 # the result with a 25 and a 9 average convolution matrix
+#
 # The images are georeferenced based on file names of
 # PALSAR data and mainly works with GeoTiff format for raster
 # inputs and outputs.
