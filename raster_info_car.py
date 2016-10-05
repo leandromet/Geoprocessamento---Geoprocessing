@@ -33,11 +33,7 @@ import os
 
 
 gdal.UseExceptions()
-#
-#shapefilebr =  "C:/biondo/buff_nasc.shp"
-#driver = ogr.GetDriverByName("ESRI Shapefile")
-#dataSourcebr = driver.Open(shapefilebr, True)
-#layerbr = dataSourcebr.GetLayer()
+
 
 #Here should be given the vector layer with the catalog, This catalog can be built with the Qgis plugin
 #"Image Footprint", it is necessary to select image boudary option. The path (caminho) field will be used to open
@@ -45,21 +41,23 @@ gdal.UseExceptions()
 
 for infile in glob.glob(r'\\wifspd01\geodados\class\Catalogo_Classes_Final.shp'):
 
+    #open the catalog
     print infile
     rapideye = infile
     driver = ogr.GetDriverByName("ESRI Shapefile")
     dataSource_rd = driver.Open(rapideye, True)
     layer_rd = dataSource_rd.GetLayer()
 
-
-    shapefile = infile
+    #local file with the geometries of interest
+    shapefile = "C:\\car.shp"
     dataSource = driver.Open(shapefile, True)
     layer = dataSource.GetLayer()
           
-    
+    #the vector layers shoul be in Albers equal area south america projection or other metric projection if
+    #you need the area in meters or hectares
     SpatialRef = osr.SpatialReference()
     SpatialRef.SetWellKnownGeogCS( "EPSG:102033" )
-        
+    #creating fields for each class that will be evaluated
     layer.CreateField(ogr.FieldDefn("0_indef", ogr.OFTInteger),False)
     layer.CreateField(ogr.FieldDefn("1_uso_cons", ogr.OFTInteger),False)
     layer.CreateField(ogr.FieldDefn("2_rvegnat", ogr.OFTInteger),False)
@@ -74,22 +72,25 @@ for infile in glob.glob(r'\\wifspd01\geodados\class\Catalogo_Classes_Final.shp')
     layer.CreateField(ogr.FieldDefn("11_Areaurb", ogr.OFTInteger),False)
     layer.CreateField(ogr.FieldDefn("12_Nuvens", ogr.OFTInteger),False)
     layer.CreateField(ogr.FieldDefn("13_ForaLi", ogr.OFTInteger),False)
-
+    #setting 5 meter pixel with 255 value for invalid pixels
     pixel_size = 5
     NoData_value = 255
     
     
     
-    
+    #loop over the features of the catalog (boundary of each raster file)
     for feat_rd in layer_rd:
+        #get the adress of the reference raster for the specific feature
         caminho_img = feat_rd.GetField("caminho")
         print caminho_img
+        #try to open the raster file, if 
         try:
             src_ds = gdal.Open( caminho_img)
         except RuntimeError, e:
             print 'Unable to open INPUT'
             print e
-            break
+            continue
+        #try to get the raster band to process
         try:
             srcband = src_ds.GetRasterBand(1)
             print srcband
@@ -97,10 +98,11 @@ for infile in glob.glob(r'\\wifspd01\geodados\class\Catalogo_Classes_Final.shp')
             # for example, try GetRasterBand(10)
             print 'Band ( %i ) not found' % band_num
             print e
-            sys.exit(1)
+            continue
+        #read the raster pixel values to an array for numpy processing
         banda_class = srcband.ReadAsArray().astype(np.float)
         
-        
+        #create a temporary raster file in memory for the mask build up
         geom=feat_rd.GetGeometryRef()
         contorno = geom.GetEnvelope()
         x_min = contorno[0]
@@ -115,15 +117,17 @@ for infile in glob.glob(r'\\wifspd01\geodados\class\Catalogo_Classes_Final.shp')
          
         
         conta=0
+        #loop over the features of interest, areas that are going to be classified
         for feature in layer:
             geom2=feature.GetGeometryRef()
             #print 'feat' , caminho_feat
+            #checks if the feature of interest intersects the image boundary polygon
             if geom2.Intersects(geom2):
                 print "aqui"
                 conta+=1
+                #setting a temporary vector layer
                 if os.path.exists('C:\\Users\\pedro.mendes\\Desktop\\temporario.shp'):
                     driver.DeleteDataSource('C:\\Users\\pedro.mendes\\Desktop\\temporario.shp')
-                
                 dstdata = driver.CreateDataSource('C:\\Users\\pedro.mendes\\Desktop\\temporario.shp')
                 dstlayer = dstdata.CreateLayer("teste3") 
                 intersect = geom.Intersection(geom2)
