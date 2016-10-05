@@ -43,7 +43,7 @@ gdal.UseExceptions()
 #"Image Footprint", it is necessary to select image boudary option. The path (caminho) field will be used to open
 #the images with classified pixels, you can use a * as mask if there are more then 1 catalog
 
-for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_class_fipe.shp'):
+for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
 
     print infile
     rapideye = infile
@@ -52,7 +52,7 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
     layer_rd = dataSource_rd.GetLayer()
 
 
-    shapefile = ('D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\Imoveis_teste.shp')
+    shapefile = ('C:\\temp\\imoveis.shp')
     dataSource = driver.Open(shapefile, True)
     layer = dataSource.GetLayer()
 
@@ -105,13 +105,16 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
 
 
             geom=feat_rd.GetGeometryRef()
-            contorno = geom.GetEnvelope()
+            print 'spat  ', layer_rd.GetSpatialRef()
+            print 'proj  ', src_ds.GetProjection()
+            contorno=geom.GetEnvelope()
             x_min = contorno[0]
             y_max = contorno[3]
             x_res = 5000
             y_res = 5000
             target_ds = gdal.GetDriverByName('MEM').Create('', x_res, y_res, gdal.GDT_Byte)
-            target_ds.SetGeoTransform((x_min, pixel_size, 0, y_max, 0, -pixel_size))
+            target_ds.SetGeoTransform(src_ds.GetGeoTransform())
+            target_ds.SetProjection(src_ds.GetProjection())
             band = target_ds.GetRasterBand(1)
             band.SetNoDataValue(NoData_value)
 
@@ -125,15 +128,15 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
                 if geom2.Intersects(geom):
                     print "aqui"
                     conta+=1
-                    if os.path.exists('D:\\compartilhado\\_Denilson\Scripts_Finais\\Extract_Info_class_CAR\\temporario.shp'):
-                        driver.DeleteDataSource('D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\temporario.shp')
-
-                    dstdata = driver.CreateDataSource('D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\temporario.shp')
-                    dstlayer = dstdata.CreateLayer("teste3")
-                    SpatialRef = osr.SpatialReference()
-                    SpatialRef.SetWellKnownGeogCS( "EPSG:102033" )
-                    dstdata.SetProjection(SpatialRef.ExportToWkt())
+                    if os.path.exists('C:\\temp\\temporario.shp'):
+                        driver.DeleteDataSource('C:\\temp\\temporario.shp')
                     
+                    SpatialRef = osr.SpatialReference()
+                    SpatialRef.SetWellKnownGeogCS( "EPSG:4674" )
+                    dstdata = driver.CreateDataSource('C:\\temp\\temporario.shp')
+                    dstlayer = dstdata.CreateLayer("teste3", SpatialRef)
+                    
+
                     
                     intersect = geom.Intersection(geom2)
 
@@ -179,7 +182,7 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
                     feature.Destroy()
 
 
-                    saida = "D:\\compartilhado\\_Denilson\Scripts_Finais\\Extract_Info_class_CAR\\img%d%d.tif" % (contard,c5)
+                    saida = "C:\\temp\\img%d%d.tif" % (contard,c5)
                     format = "GTiff"
                     driver2 = gdal.GetDriverByName( format )
                     metadata = driver2.GetMetadata()
@@ -191,10 +194,12 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
                         print 'Driver %s supports CreateCopy() method.' % format
 
                     dst_ds = driver2.Create( saida, 5000, 5000, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
-                    dst_ds.SetGeoTransform((x_min, pixel_size, 0, y_max, 0, -pixel_size))
                     srs = osr.SpatialReference()
-                    srs.SetWellKnownGeogCS( "EPSG:102033" )
-                    dst_ds.SetProjection( srs.ExportToWkt() )
+                    dst_ds.SetProjection(src_ds.GetProjection())
+                    dst_ds.SetGeoTransform(src_ds.GetGeoTransform())
+                    
+
+
 
 
                     dst_ds.GetRasterBand(1).WriteArray(classes)
@@ -202,7 +207,7 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
                     dst_ds.GetRasterBand(3).WriteArray(classes2)
                     dst_ds=None
                     c5+=1
-                    if c5==20:
+                    if c5==2:
                         layer=None
                         dataSource=None
                         layerbr=None
@@ -210,7 +215,7 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
                         layer_rd=None
                         dataSource_rd=None
                         print 'fim'
-                        exit(0)
+                        break
 
 
                 #break
@@ -218,6 +223,7 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
             #break
             #break
         #break
+    #break
 layer=None
 dataSource=None
 layerbr=None
