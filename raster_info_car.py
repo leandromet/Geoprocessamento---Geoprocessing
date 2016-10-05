@@ -173,7 +173,31 @@ for infile in glob.glob(r'\\wifspd01\geodados\class\Catalogo_Classes_Final.shp')
                 layer.SetFeature(feature)
                 feature.Destroy()
                 
-            #break
+                saida = "C:\\Users\\pedro.mendes\\Desktop\\img%d.tif" % conta
+                format = "GTiff"
+                driver = gdal.GetDriverByName( format )
+                metadata = driver.GetMetadata()
+                if metadata.has_key(gdal.DCAP_CREATE) \
+                   and metadata[gdal.DCAP_CREATE] == 'YES':
+                    print 'Driver %s supports Create() method.' % format
+                if metadata.has_key(gdal.DCAP_CREATECOPY) \
+                   and metadata[gdal.DCAP_CREATECOPY] == 'YES':
+                    print 'Driver %s supports CreateCopy() method.' % format
+
+                dst_ds = driver.Create( saida, 4500, 4500, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
+                dst_ds.SetGeoTransform( [ lon-0.000111111, 0.000222222, 0, lat-0.000111111, 0, -0.000222222 ] )
+
+                srs = osr.SpatialReference()
+                srs.SetWellKnownGeogCS( 'WGS84' )
+                dst_ds.SetProjection( srs.ExportToWkt() )
+
+
+                dst_ds.GetRasterBand(1).WriteArray(classes)
+                dst_ds.GetRasterBand(2).WriteArray(array)
+                dst_ds.GetRasterBand(3).WriteArray(classes = classes*array)
+                
+                
+                #break
         layer.ResetReading()
         #break
         #break 
