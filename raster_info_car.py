@@ -122,7 +122,7 @@ for infile in glob.glob(r'\\wifspd01\geodados\class\Catalogo_Classes_Final.shp')
             geom2=feature.GetGeometryRef()
             #print 'feat' , caminho_feat
             #checks if the feature of interest intersects the image boundary polygon
-            if geom2.Intersects(geom2):
+            if geom2.Intersects(geom):
                 print "aqui"
                 conta+=1
                 #setting a temporary vector layer
