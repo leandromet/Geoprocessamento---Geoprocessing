@@ -57,8 +57,7 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
     layer = dataSource.GetLayer()
 
 
-    SpatialRef = osr.SpatialReference()
-    SpatialRef.SetWellKnownGeogCS( "EPSG:102033" )
+
 
     layer.CreateField(ogr.FieldDefn("0_indef", ogr.OFTInteger),False)
     layer.CreateField(ogr.FieldDefn("1_uso_cons", ogr.OFTInteger),False)
@@ -131,6 +130,11 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\FIPE\catalogo_completo_clas
 
                     dstdata = driver.CreateDataSource('D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\temporario.shp')
                     dstlayer = dstdata.CreateLayer("teste3")
+                    SpatialRef = osr.SpatialReference()
+                    SpatialRef.SetWellKnownGeogCS( "EPSG:102033" )
+                    dstdata.SetProjection(SpatialRef.ExportToWkt())
+                    
+                    
                     intersect = geom.Intersection(geom2)
 
                     dstfeature = ogr.Feature(dstlayer.GetLayerDefn())
