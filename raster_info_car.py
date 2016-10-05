@@ -1,3 +1,30 @@
+
+#-------------------------------------------------------------------------------
+# Name:        Raster information from vector relations
+# Purpose:     Classify features of interest based on a raster with pixels that have classification values.
+#               Having a catalog in a vector layer with adresses of images related to each polygon, count
+#               the pixels with given values that are inside any given polygon. The raster files have a
+#               land usage classification that was automaticaly generated, this classification covers the 
+#               whole country. We have rural properties boundaries and other poligons that we want to verify
+#               how much area was classified as being one of 13 distinct classes. This aproach gets each
+#               image boundary polygon intersection with each feature of interest and builds a raster mask.
+#               The mask has the same resolution as the original image (RapidEye, 5 meters) with binary values,
+#               being 1 if the pixel is part of the intersection and 0 if it is not. This mask is then multiplied
+#               as a matrix by the matrix of pixel values from the image (in this case 14 possible values).
+#               Finally a histogram is made with bins that separate the intended classes and the count of
+#               each bin is added to the vector layer with features of interest.
+#
+# Author:      leandro.biondo
+#
+# Created:     05/10/2016
+# Copyright:   (c) leandro.biondo 2016
+# Licence:     GNU GLP
+#-------------------------------------------------------------------------------
+#!/usr/bin/env python
+
+# import modules
+
+
 import gdal
 import numpy as np
 from osgeo import ogr, osr
@@ -12,28 +39,20 @@ gdal.UseExceptions()
 #dataSourcebr = driver.Open(shapefilebr, True)
 #layerbr = dataSourcebr.GetLayer()
 
-for infile in glob.glob(r'C:\Users\pedro.mendes\Desktop\Brasil_00_2016.shp'):
+#Here should be given the vector layer with the catalog, This catalog can be built with the Qgis plugin
+#"Image Footprint", it is necessary to select image boudary option. The path (caminho) field will be used to open
+#the images with classified pixels, you can use a * as mask if there are more then 1 catalog
 
+for infile in glob.glob(r'\\wifspd01\geodados\class\Catalogo_Classes_Final.shp'):
 
     print infile
-   
-
-#    for featurebr in layerbr:
-#        print featurebr.GetField(1)
-#        geom = featurebr.GetGeometryRef()
-#        print 'estado', geom.GetEnvelope()
     rapideye = infile
     driver = ogr.GetDriverByName("ESRI Shapefile")
     dataSource_rd = driver.Open(rapideye, True)
     layer_rd = dataSource_rd.GetLayer()
 
 
-
-
-
-
-
-    shapefile = "C:/Users/pedro.mendes/Desktop/Brasil_01_2016.shp"
+    shapefile = infile
     dataSource = driver.Open(shapefile, True)
     layer = dataSource.GetLayer()
           
