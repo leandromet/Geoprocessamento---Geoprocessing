@@ -1,4 +1,3 @@
-
 #-------------------------------------------------------------------------------
 # Name:        Raster information from vector relations
 # Purpose:     Classify features of interest based on a raster with pixels that have classification values.
@@ -43,7 +42,7 @@ gdal.UseExceptions()
 #"Image Footprint", it is necessary to select image boudary option. The path (caminho) field will be used to open
 #the images with classified pixels, you can use a * as mask if there are more then 1 catalog
 
-for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
+for infile in glob.glob(r'D:\compartilhado\_Denilson\Scripts_Finais\Extract_Info_class_CAR\catalogo_completo_class_fipe_sirgas1.shp'):
 
     print infile
     rapideye = infile
@@ -52,7 +51,7 @@ for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
     layer_rd = dataSource_rd.GetLayer()
 
 
-    shapefile = ('C:\\temp\\imoveis.shp')
+    shapefile = ('D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\Imoveis_teste_Sobreposicao.shp')
     dataSource = driver.Open(shapefile, True)
     layer = dataSource.GetLayer()
 
@@ -105,19 +104,19 @@ for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
 
 
             geom=feat_rd.GetGeometryRef()
-            print 'spat  ', layer_rd.GetSpatialRef()
-            print 'proj  ', src_ds.GetProjection()
+            #print 'spat  ', layer_rd.GetSpatialRef()
+           # print 'proj  ', src_ds.GetProjection()
             contorno=geom.GetEnvelope()
             x_min = contorno[0]
             y_max = contorno[3]
             x_res = 5000
             y_res = 5000
-            target_ds = gdal.GetDriverByName('MEM').Create('', x_res, y_res, gdal.GDT_Byte)
-            target_ds.SetGeoTransform(src_ds.GetGeoTransform())
-            target_ds.SetProjection(src_ds.GetProjection())
-            band = target_ds.GetRasterBand(1)
-            band.SetNoDataValue(NoData_value)
-
+#            target_ds = gdal.GetDriverByName('MEM').Create('', x_res, y_res, gdal.GDT_Byte)
+#            target_ds.SetGeoTransform(src_ds.GetGeoTransform())
+#            target_ds.SetProjection(src_ds.GetProjection())
+#            band = target_ds.GetRasterBand(1)
+#            band.SetNoDataValue(NoData_value)
+#
 
             contard=contard+1
             conta=0
@@ -126,32 +125,47 @@ for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
                 geom2=feature.GetGeometryRef()
                 #print 'feat' , caminho_feat
                 if geom2.Intersects(geom):
-                    print "aqui"
+                   
+                    intersect = geom.Intersection(geom2)
+                    #print intersect.GetArea()
+                    #print (intersect.GetArea()/geom2.GetArea())
+                    if (intersect.GetArea()/geom2.GetArea())<0.5:
+                        continue
+                 
+                    #print "aqui"
                     conta+=1
-                    if os.path.exists('C:\\temp\\temporario.shp'):
-                        driver.DeleteDataSource('C:\\temp\\temporario.shp')
+                   # if os.path.exists('D:\\compartilhado\\_Denilson\Scripts_Finais\\Extract_Info_class_CAR\\temporario.shp'):
+                   #     driver.DeleteDataSource('D:\\compartilhado\\_Denilson\Scripts_Finais\\Extract_Info_class_CAR\\temporario.shp')
+                    
+                    
+                    
                     
                     SpatialRef = osr.SpatialReference()
                     SpatialRef.SetWellKnownGeogCS( "EPSG:4674" )
-                    dstdata = driver.CreateDataSource('C:\\temp\\temporario.shp')
-                    dstlayer = dstdata.CreateLayer("teste3", SpatialRef)
+                    #dstdata = driver.CreateDataSource('D:\\compartilhado\\_Denilson\Scripts_Finais\\Extract_Info_class_CAR\\temporario.shp')
+                    memoutdriver=ogr.GetDriverByName('MEMORY')
+                    memsource=memoutdriver.CreateDataSource('memData')
+                    tmp=memoutdriver.Open('memData', 1)
+                    dstlayer = memsource.CreateLayer('teste', SpatialRef)
                     
-
+                    target_ds = gdal.GetDriverByName('MEM').Create('', x_res, y_res, gdal.GDT_Byte)
+                    target_ds.SetGeoTransform(src_ds.GetGeoTransform())
+                    target_ds.SetProjection(src_ds.GetProjection())
+                    band = target_ds.GetRasterBand(1)
+                    band.SetNoDataValue(NoData_value)
                     
-                    intersect = geom.Intersection(geom2)
-
                     dstfeature = ogr.Feature(dstlayer.GetLayerDefn())
                     dstfeature.SetGeometry(intersect)
                     dstlayer.CreateFeature(dstfeature)
-                    print 'resultado', dstfeature.GetGeometryRef().GetEnvelope()
+                   # print 'resultado', dstfeature.GetGeometryRef().GetEnvelope()
 
                     # Rasterize
                     gdal.RasterizeLayer(target_ds, [1], dstlayer, burn_values=[1])
                     array = band.ReadAsArray()
-                    print np.histogram(array, bins=[0,1,250,300])
+                   # print np.histogram(array, bins=[0,1,250,300])
                     # Read as array
                     dstlayer=None
-                    dstdata.Destroy()
+                    memsource.Destroy()
 
 
                     #tabela = srcband.ReadAsArray()
@@ -162,8 +176,8 @@ for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
                     classes2 = classes*array
                     resposta = np.histogram(classes2, bins=[0,1,2,3,4,5,6,7,8,9,10,11,12,20])
 
-                    print 'valor', resposta[1][0], 'contagem', resposta[0][0]
-                    print 'valor', resposta[1][2], 'contagem', resposta[0][2]
+                    #print 'valor', resposta[1][0], 'contagem', resposta[0][0]
+                   # print 'valor', resposta[1][2], 'contagem', resposta[0][2]
                     feature.SetField("0_indef", int(resposta1[0][0]*25))
                     feature.SetField("1_uso_cons", int(resposta[0][1]*25))
                     feature.SetField("2_rvegnat", int(resposta[0][2]*25))
@@ -180,43 +194,44 @@ for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
                     feature.SetField("13_ForaLi", int((resposta[0][0]-resposta1[0][0])*25))
                     layer.SetFeature(feature)
                     feature.Destroy()
+                    print "ImagemImovel: %d | %d | %d" % (c5,contard,conta)
 
-
-                    saida = "C:\\temp\\img%d%d.tif" % (contard,c5)
-                    format = "GTiff"
-                    driver2 = gdal.GetDriverByName( format )
-                    metadata = driver2.GetMetadata()
-                    if metadata.has_key(gdal.DCAP_CREATE) \
-                       and metadata[gdal.DCAP_CREATE] == 'YES':
-                        print 'Driver %s supports Create() method.' % format
-                    if metadata.has_key(gdal.DCAP_CREATECOPY) \
-                       and metadata[gdal.DCAP_CREATECOPY] == 'YES':
-                        print 'Driver %s supports CreateCopy() method.' % format
-
-                    dst_ds = driver2.Create( saida, 5000, 5000, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
-                    srs = osr.SpatialReference()
-                    dst_ds.SetProjection(src_ds.GetProjection())
-                    dst_ds.SetGeoTransform(src_ds.GetGeoTransform())
-                    
-
-
-
-
-                    dst_ds.GetRasterBand(1).WriteArray(classes)
-                    dst_ds.GetRasterBand(2).WriteArray(array)
-                    dst_ds.GetRasterBand(3).WriteArray(classes2)
-                    dst_ds=None
+##create an image file and put the results in 3 band for testing purposes
+#
+#                    saida = "D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\img%d%d.tif" % (contard,c5)
+#                    format = "GTiff"
+#                    driver2 = gdal.GetDriverByName( format )
+#                    metadata = driver2.GetMetadata()
+#                    if metadata.has_key(gdal.DCAP_CREATE) \
+#                       and metadata[gdal.DCAP_CREATE] == 'YES':
+#                        print 'Driver %s supports Create() method.' % format
+#                    if metadata.has_key(gdal.DCAP_CREATECOPY) \
+#                       and metadata[gdal.DCAP_CREATECOPY] == 'YES':
+#                        print 'Driver %s supports CreateCopy() method.' % format
+#
+#                    dst_ds = driver2.Create( saida, 5000, 5000, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
+#                    srs = osr.SpatialReference()
+#                    dst_ds.SetProjection(src_ds.GetProjection())
+#                    dst_ds.SetGeoTransform(src_ds.GetGeoTransform())
+#          
+#                    dst_ds.GetRasterBand(1).WriteArray(classes)
+#                    dst_ds.GetRasterBand(2).WriteArray(array)
+#                    dst_ds.GetRasterBand(3).WriteArray(classes2)
+#                    dst_ds=None
+##
                     c5+=1
-                    if c5==2:
-                        layer=None
-                        dataSource=None
-                        layerbr=None
-                        dataSourcebr=None
-                        layer_rd=None
-                        dataSource_rd=None
-                        print 'fim'
-                        break
-
+#                    if c5==30:
+#                        layer=None
+#                        dataSource=None
+#                        layerbr=None
+#                        dataSourcebr=None
+#                        layer_rd=None
+#                        dataSource_rd=None
+#                        target_ds= None
+#                        print 'fim'
+#                        break
+                        
+                    target_ds= None
 
                 #break
             layer.ResetReading()
