@@ -1,4 +1,3 @@
-
 #-------------------------------------------------------------------------------
 # Name:        Raster information from vector relations
 # Purpose:     Classify features of interest based on a raster with pixels that have classification values.
@@ -24,13 +23,11 @@
 
 # import modules
 
-
 import gdal
 import numpy as np
 from osgeo import ogr, osr
 import glob
 import os
-
 
 gdal.UseExceptions()
 #
@@ -43,7 +40,7 @@ gdal.UseExceptions()
 #"Image Footprint", it is necessary to select image boudary option. The path (caminho) field will be used to open
 #the images with classified pixels, you can use a * as mask if there are more then 1 catalog
 
-for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
+for infile in glob.glob(r'D:\compartilhado\_Denilson\Scripts_Finais\Extract_Info_class_CAR\catalogo_completo_class_fipe_sirgas1.shp'):
 
     print infile
     rapideye = infile
@@ -52,27 +49,25 @@ for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
     layer_rd = dataSource_rd.GetLayer()
 
 
-    shapefile = ('C:\\temp\\imoveis.shp')
+    shapefile = ('D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\Imoveis_teste_Sobreposicao.shp')
     dataSource = driver.Open(shapefile, True)
     layer = dataSource.GetLayer()
 
 
-
-
-    layer.CreateField(ogr.FieldDefn("0_indef", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("1_uso_cons", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("2_rvegnat", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("3_vereda", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("4_mangue", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("5_Salgado", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("6_Apicum", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("7_Restinga", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("8_Agua", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("9_Vegremo", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("10_Regene", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("11_Areaurb", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("12_Nuvens", ogr.OFTInteger),False)
-    layer.CreateField(ogr.FieldDefn("13_ForaLi", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("indef", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("uso_cons", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("rvegnat", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("vereda", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("mangue", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("salgado", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("apicum", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("restinga", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("agua", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("vegremo", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("regene", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("areaurb", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("nuvens", ogr.OFTInteger),False)
+    layer.CreateField(ogr.FieldDefn("foraLi", ogr.OFTInteger),False)
 
     pixel_size = 5
     NoData_value = 255
@@ -105,125 +100,136 @@ for infile in glob.glob(r'C:\temp\catalogo_completo_class_fipe_sirgas.shp'):
 
 
             geom=feat_rd.GetGeometryRef()
-            print 'spat  ', layer_rd.GetSpatialRef()
-            print 'proj  ', src_ds.GetProjection()
+            #print 'spat  ', layer_rd.GetSpatialRef()
+           # print 'proj  ', src_ds.GetProjection()
             contorno=geom.GetEnvelope()
             x_min = contorno[0]
             y_max = contorno[3]
             x_res = 5000
             y_res = 5000
-            target_ds = gdal.GetDriverByName('MEM').Create('', x_res, y_res, gdal.GDT_Byte)
-            target_ds.SetGeoTransform(src_ds.GetGeoTransform())
-            target_ds.SetProjection(src_ds.GetProjection())
-            band = target_ds.GetRasterBand(1)
-            band.SetNoDataValue(NoData_value)
-
+#            target_ds = gdal.GetDriverByName('MEM').Create('', x_res, y_res, gdal.GDT_Byte)
+#            target_ds.SetGeoTransform(src_ds.GetGeoTransform())
+#            target_ds.SetProjection(src_ds.GetProjection())
+#            band = target_ds.GetRasterBand(1)
+#            band.SetNoDataValue(NoData_value)
+#
 
             contard=contard+1
             conta=0
+            cont_loop=0
 
             for feature in layer:
                 geom2=feature.GetGeometryRef()
+                verifica_f=feature.GetField("foraLi")
                 #print 'feat' , caminho_feat
-                if geom2.Intersects(geom):
-                    print "aqui"
-                    conta+=1
-                    if os.path.exists('C:\\temp\\temporario.shp'):
-                        driver.DeleteDataSource('C:\\temp\\temporario.shp')
-                    
-                    SpatialRef = osr.SpatialReference()
-                    SpatialRef.SetWellKnownGeogCS( "EPSG:4674" )
-                    dstdata = driver.CreateDataSource('C:\\temp\\temporario.shp')
-                    dstlayer = dstdata.CreateLayer("teste3", SpatialRef)
-                    
-
-                    
-                    intersect = geom.Intersection(geom2)
-
-                    dstfeature = ogr.Feature(dstlayer.GetLayerDefn())
-                    dstfeature.SetGeometry(intersect)
-                    dstlayer.CreateFeature(dstfeature)
-                    print 'resultado', dstfeature.GetGeometryRef().GetEnvelope()
-
-                    # Rasterize
-                    gdal.RasterizeLayer(target_ds, [1], dstlayer, burn_values=[1])
-                    array = band.ReadAsArray()
-                    print np.histogram(array, bins=[0,1,250,300])
-                    # Read as array
-                    dstlayer=None
-                    dstdata.Destroy()
-
-
-                    #tabela = srcband.ReadAsArray()
-                    #print tabela
-
-                    resposta1 = np.histogram(classes, bins=[0,1,20])
-
-                    classes2 = classes*array
-                    resposta = np.histogram(classes2, bins=[0,1,2,3,4,5,6,7,8,9,10,11,12,20])
-
-                    print 'valor', resposta[1][0], 'contagem', resposta[0][0]
-                    print 'valor', resposta[1][2], 'contagem', resposta[0][2]
-                    feature.SetField("0_indef", int(resposta1[0][0]*25))
-                    feature.SetField("1_uso_cons", int(resposta[0][1]*25))
-                    feature.SetField("2_rvegnat", int(resposta[0][2]*25))
-                    feature.SetField("3_vereda", int(resposta[0][3]*25))
-                    feature.SetField("4_mangue", int(resposta[0][4]*25))
-                    feature.SetField("5_Salgado", int(resposta[0][5]*25))
-                    feature.SetField("6_Apicum", int(resposta[0][6]*25))
-                    feature.SetField("7_Restinga", int(resposta[0][7]*25))
-                    feature.SetField("8_Agua", int(resposta[0][8]*25))
-                    feature.SetField("9_Vegremo", int(resposta[0][9]*25))
-                    feature.SetField("10_Regene", int(resposta[0][10]*25))
-                    feature.SetField("11_Areaurb", int(resposta[0][11]*25))
-                    feature.SetField("12_Nuvens", int(resposta[0][12]*25))
-                    feature.SetField("13_ForaLi", int((resposta[0][0]-resposta1[0][0])*25))
-                    layer.SetFeature(feature)
-                    feature.Destroy()
-
-
-                    saida = "C:\\temp\\img%d%d.tif" % (contard,c5)
-                    format = "GTiff"
-                    driver2 = gdal.GetDriverByName( format )
-                    metadata = driver2.GetMetadata()
-                    if metadata.has_key(gdal.DCAP_CREATE) \
-                       and metadata[gdal.DCAP_CREATE] == 'YES':
-                        print 'Driver %s supports Create() method.' % format
-                    if metadata.has_key(gdal.DCAP_CREATECOPY) \
-                       and metadata[gdal.DCAP_CREATECOPY] == 'YES':
-                        print 'Driver %s supports CreateCopy() method.' % format
-
-                    dst_ds = driver2.Create( saida, 5000, 5000, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
-                    srs = osr.SpatialReference()
-                    dst_ds.SetProjection(src_ds.GetProjection())
-                    dst_ds.SetGeoTransform(src_ds.GetGeoTransform())
-                    
-
-
-
-
-                    dst_ds.GetRasterBand(1).WriteArray(classes)
-                    dst_ds.GetRasterBand(2).WriteArray(array)
-                    dst_ds.GetRasterBand(3).WriteArray(classes2)
-                    dst_ds=None
+                #print verifica_f
+                cont_loop+=1
+                if geom2.Intersects(geom) :
                     c5+=1
-                    if c5==2:
-                        layer=None
-                        dataSource=None
-                        layerbr=None
-                        dataSourcebr=None
-                        layer_rd=None
-                        dataSource_rd=None
-                        print 'fim'
-                        break
+                    if (verifica_f is None):
+                   
+                        intersect = geom.Intersection(geom2)
+                        #print intersect.GetArea()
+                        #print (intersect.GetArea()/geom2.GetArea())
+                        if (intersect.GetArea()/geom2.GetArea())<0.5:
+                            continue
 
+                        conta+=1
+                        
+                        SpatialRef = osr.SpatialReference()
+                        SpatialRef.SetWellKnownGeogCS( "EPSG:4674" )
+                        memoutdriver=ogr.GetDriverByName('MEMORY')
+                        memsource=memoutdriver.CreateDataSource('memData')
+                        tmp=memoutdriver.Open('memData', 1)
+                        dstlayer = memsource.CreateLayer('teste', SpatialRef)
+                        
+                        target_ds = gdal.GetDriverByName('MEM').Create('', x_res, y_res, gdal.GDT_Byte)
+                        target_ds.SetGeoTransform(src_ds.GetGeoTransform())
+                        target_ds.SetProjection(src_ds.GetProjection())
+                        band = target_ds.GetRasterBand(1)
+                        band.SetNoDataValue(NoData_value)
+                        
+                        dstfeature = ogr.Feature(dstlayer.GetLayerDefn())
+                        dstfeature.SetGeometry(intersect)
+                        dstlayer.CreateFeature(dstfeature)
+                       # print 'resultado', dstfeature.GetGeometryRef().GetEnvelope()
+
+                        # Rasterize
+                        gdal.RasterizeLayer(target_ds, [1], dstlayer, burn_values=[1])
+                        array = band.ReadAsArray()
+                        #print np.histogram(array, bins=[0,1,250,300])
+                        # Read as array
+                        dstlayer=None
+                        memsource.Destroy()
+
+
+                        #tabela = srcband.ReadAsArray()
+                        #print tabela
+
+                        resposta1 = np.histogram(classes, bins=[0,1,20])
+
+                        classes2 = classes*array
+                        resposta = np.histogram(classes2, bins=[0,1,2,3,4,5,6,7,8,9,10,11,12,20])
+
+
+                        feature.SetField("indef", int(resposta1[0][0]*25))
+                        feature.SetField("uso_cons", int(resposta[0][1]*25))
+                        feature.SetField("rvegnat", int(resposta[0][2]*25))
+                        feature.SetField("vereda", int(resposta[0][3]*25))
+                        feature.SetField("mangue", int(resposta[0][4]*25))
+                        feature.SetField("salgado", int(resposta[0][5]*25))
+                        feature.SetField("apicum", int(resposta[0][6]*25))
+                        feature.SetField("restinga", int(resposta[0][7]*25))
+                        feature.SetField("agua", int(resposta[0][8]*25))
+                        feature.SetField("vegremo", int(resposta[0][9]*25))
+                        feature.SetField("regene", int(resposta[0][10]*25))
+                        feature.SetField("areaurb", int(resposta[0][11]*25))
+                        feature.SetField("nuvens", int(resposta[0][12]*25))
+                        feature.SetField("foraLi", int((resposta[0][0]-resposta1[0][0])*25))
+                        layer.SetFeature(feature)
+                        feature.Destroy()
+                        print "ImagemImovel: %d | %d | %d | %d" % (c5,contard,conta,cont_loop)
+                        
+                        c5+=1
+    ##create an image file and put the results in 3 band for testing purposes
+    #
+    #                    saida = "D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\img%d%d.tif" % (contard,c5)
+    #                    format = "GTiff"
+    #                    driver2 = gdal.GetDriverByName( format )
+    #                    metadata = driver2.GetMetadata()
+    #                    if metadata.has_key(gdal.DCAP_CREATE) \
+    #                       and metadata[gdal.DCAP_CREATE] == 'YES':
+    #                        print 'Driver %s supports Create() method.' % format
+    #                    if metadata.has_key(gdal.DCAP_CREATECOPY) \
+    #                       and metadata[gdal.DCAP_CREATECOPY] == 'YES':
+    #                        print 'Driver %s supports CreateCopy() method.' % format
+    #
+    #                    dst_ds = driver2.Create( saida, 5000, 5000, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
+    #                    srs = osr.SpatialReference()
+    #                    dst_ds.SetProjection(src_ds.GetProjection())
+    #                    dst_ds.SetGeoTransform(src_ds.GetGeoTransform())
+    #          
+    #                    dst_ds.GetRasterBand(1).WriteArray(classes)
+    #                    dst_ds.GetRasterBand(2).WriteArray(array)
+    #                    dst_ds.GetRasterBand(3).WriteArray(classes2)
+    #                    dst_ds=None
+    ##
+    #                    if c5==10:
+    #                        layer=None
+    #                        dataSource=None
+    #                        layerbr=None
+    #                        dataSourcebr=None
+    #                        layer_rd=None
+    #                        dataSource_rd=None
+    #                        target_ds= None
+    #                        print 'fim'
+    #                        break
+                            
+                        target_ds= None
 
                 #break
             layer.ResetReading()
-            #break
-            #break
-        #break
-    #break
+
 layer=None
 dataSource=None
 layerbr=None
