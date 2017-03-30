@@ -40,7 +40,7 @@ gdal.UseExceptions()
 #"Image Footprint", it is necessary to select image boudary option. The path (caminho) field will be used to open
 #the images with classified pixels, you can use a * as mask if there are more then 1 catalog
 
-for infile in glob.glob(r'D:\compartilhado\_Denilson\Scripts_Finais\Extract_Info_class_CAR\catalogo_completo_class_fipe_sirgas1.shp'):
+for infile in glob.glob(r'/home/gecad/CAR/Demandas/Nascentes/aaa_nascentes_catalogo.shp'):
 
     print infile
     rapideye = infile
@@ -49,7 +49,7 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\Scripts_Finais\Extract_Info
     layer_rd = dataSource_rd.GetLayer()
 
 
-    shapefile = ('D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\Imoveis_teste_Sobreposicao.shp')
+    shapefile = ('/home/gecad/CAR/Demandas/Nascentes/aaa_nascentes_catalogo.shp')
     dataSource = driver.Open(shapefile, True)
     layer = dataSource.GetLayer()
 
@@ -129,8 +129,8 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\Scripts_Finais\Extract_Info
                     if (verifica_f is None):
                    
                         intersect = geom.Intersection(geom2)
-                        #print intersect.GetArea()
-                        #print (intersect.GetArea()/geom2.GetArea())
+                        print intersect.GetArea()
+                        print (intersect.GetArea()/geom2.GetArea())
                         if (intersect.GetArea()/geom2.GetArea())<0.5:
                             continue
 
@@ -191,40 +191,40 @@ for infile in glob.glob(r'D:\compartilhado\_Denilson\Scripts_Finais\Extract_Info
                         print "ImagemImovel: %d | %d | %d | %d" % (c5,contard,conta,cont_loop)
                         
                         c5+=1
-    ##create an image file and put the results in 3 band for testing purposes
-    #
-    #                    saida = "D:\\compartilhado\\_Denilson\\Scripts_Finais\\Extract_Info_class_CAR\\img%d%d.tif" % (contard,c5)
-    #                    format = "GTiff"
-    #                    driver2 = gdal.GetDriverByName( format )
-    #                    metadata = driver2.GetMetadata()
-    #                    if metadata.has_key(gdal.DCAP_CREATE) \
-    #                       and metadata[gdal.DCAP_CREATE] == 'YES':
-    #                        print 'Driver %s supports Create() method.' % format
-    #                    if metadata.has_key(gdal.DCAP_CREATECOPY) \
-    #                       and metadata[gdal.DCAP_CREATECOPY] == 'YES':
-    #                        print 'Driver %s supports CreateCopy() method.' % format
-    #
-    #                    dst_ds = driver2.Create( saida, 5000, 5000, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
-    #                    srs = osr.SpatialReference()
-    #                    dst_ds.SetProjection(src_ds.GetProjection())
-    #                    dst_ds.SetGeoTransform(src_ds.GetGeoTransform())
-    #          
-    #                    dst_ds.GetRasterBand(1).WriteArray(classes)
-    #                    dst_ds.GetRasterBand(2).WriteArray(array)
-    #                    dst_ds.GetRasterBand(3).WriteArray(classes2)
-    #                    dst_ds=None
-    ##
-    #                    if c5==10:
-    #                        layer=None
-    #                        dataSource=None
-    #                        layerbr=None
-    #                        dataSourcebr=None
-    #                        layer_rd=None
-    #                        dataSource_rd=None
-    #                        target_ds= None
-    #                        print 'fim'
-    #                        break
-                            
+    #create an image file and put the results in 3 band for testing purposes
+#    
+#                        saida = "/home/gecad/CAR/Demandas/Nascentes/img_testes/img%d%d.tif" % (contard,c5)
+#                        format = "GTiff"
+#                        driver2 = gdal.GetDriverByName( format )
+#                        metadata = driver2.GetMetadata()
+#                        if metadata.has_key(gdal.DCAP_CREATE) \
+#                           and metadata[gdal.DCAP_CREATE] == 'YES':
+#                            print 'Driver %s supports Create() method.' % format
+#                        if metadata.has_key(gdal.DCAP_CREATECOPY) \
+#                           and metadata[gdal.DCAP_CREATECOPY] == 'YES':
+#                            print 'Driver %s supports CreateCopy() method.' % format
+#    
+#                        dst_ds = driver2.Create( saida, 5000, 5000, 3, gdal.GDT_Float32, ['COMPRESS=LZW'] )
+#                        srs = osr.SpatialReference()
+#                        dst_ds.SetProjection(src_ds.GetProjection())
+#                        dst_ds.SetGeoTransform(src_ds.GetGeoTransform())
+#              
+#                        dst_ds.GetRasterBand(1).WriteArray(classes)
+#                        dst_ds.GetRasterBand(2).WriteArray(array)
+#                        dst_ds.GetRasterBand(3).WriteArray(classes2)
+#                        dst_ds=None
+#    #
+#                        if c5==10:
+#                            layer=None
+#                            dataSource=None
+#                            layerbr=None
+#                            dataSourcebr=None
+#                            layer_rd=None
+#                            dataSource_rd=None
+#                            target_ds= None
+#                            print 'fim forcado'
+#                            break
+#                            
                         target_ds= None
 
                 #break
