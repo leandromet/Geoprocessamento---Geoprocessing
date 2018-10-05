@@ -1,0 +1,48 @@
+update proc_sfb.atlas_15_nasc
+set cod_uf = cod_estado
+from  usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.municipio where
+atlas_15_nasc.idt_imovel = imovel.idt_imovel and imovel.idt_municipio = municipio.idt_municipio;
+
+
+alter table proc_sfb.atlas_01_consol
+add column cod_uf character varying(2);
+update proc_sfb.atlas_01_consol
+set cod_uf = cod_estado
+from  usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.municipio where
+atlas_01_consol.idt_imovel = imovel.idt_imovel and imovel.idt_municipio = municipio.idt_municipio;
+
+alter table proc_sfb.atlas_02_remanesc
+add column cod_uf character varying(2);
+
+update proc_sfb.atlas_02_remanesc
+set cod_uf = cod_estado
+from  usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.municipio where
+atlas_02_remanesc.idt_imovel = imovel.idt_imovel and imovel.idt_municipio = municipio.idt_municipio;
+
+
+alter table proc_sfb.atlas_26_imovel
+add column cod_uf character varying(2);
+
+update proc_sfb.atlas_26_imovel
+set cod_uf = cod_estado
+from  usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.municipio where
+atlas_26_imovel.idt_imovel = imovel.idt_imovel and imovel.idt_municipio = municipio.idt_municipio;
+
+
+
+alter table proc_sfb.atlas_30_app
+add column cod_uf character varying(2);
+
+update proc_sfb.atlas_30_app
+set cod_uf = cod_estado
+from  usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.municipio where
+atlas_30_app.idt_imovel = imovel.idt_imovel and imovel.idt_municipio = municipio.idt_municipio;
+
+alter table proc_sfb.atlas_32_rl
+add column cod_uf character varying(2);
+
+update proc_sfb.atlas_32_rl
+set cod_uf = cod_estado
+from  usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.municipio where
+atlas_32_rl.idt_imovel = imovel.idt_imovel and imovel.idt_municipio = municipio.idt_municipio;
+
