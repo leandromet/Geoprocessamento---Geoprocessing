@@ -33,3 +33,19 @@ WHERE
 num_area_embargada > 0 and
   quadro_area.idt_imovel = imovel.idt_imovel AND
   municipio.idt_municipio = imovel.idt_municipio;
+
+
+
+
+create table proc_sfb.embargos_vegetacao as
+SELECT 
+  remanescente_vegetacao_nativa.gid, 
+  remanescente_vegetacao_nativa.gridcode, 
+  remanescente_vegetacao_nativa.classificacao, 
+  remanescente_vegetacao_nativa.estado, 
+  remanescente_vegetacao_nativa.the_geom
+FROM 
+  base_referencia.remanescente_vegetacao_nativa, 
+  proc_sfb.embargos_dados
+WHERE 
+  st_intersects(remanescente_vegetacao_nativa.the_geom, embargos_dados.geom);
