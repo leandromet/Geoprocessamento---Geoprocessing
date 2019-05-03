@@ -1,0 +1,70 @@
+Constuma ser suficiente utilizar o script perl postgis_restore.pl que vem com a versão do postigs (não lembro com qual pacote, mas algum de developer ou tools). Em um restore recente que fiz, utilizei este comando:
+
+perl /usr/share/postgresql/9.5/contrib/postgis-2.2/postgis_restore.pl /rede/image01/car_nacional_2019-01-04.dump | PGPASSWORD="########" psql -h localhost -p 5432 -W -U postgres car_nacional201901 2> erros2019a.txt
+
+
+
+
+Passos para subir versão identica à produção (não necessário, mas tem a descrição das versões principais)
+
+
+Ethel e Ney, bom dia. Para ter uma memória de requisitos, na minha maquina, sistema operacional:
+
+openSUSE Leap 42.1 Milestone 1 (Malachite) (x86_64)
+
+Fiz o seguinte procedimento:
+
+
+Copiar e descompactar o banco1609.tar , que contém uma cópia do workspace do banco do SICAR.
+
+
+Instalar um novo postgresql 9.2 (postgresql-9.2.14-1-linux-x64.run)
+
+Na instalação, apontar a pasta descompactada postgresnfs/postgresql/ como workspace do banco novo, o workspace antigo estava apontando para um log de quarta-feira em um local do servidor da embratel, então para iniciar o banco, criar um arquivo $/dados/log/postgresql-Wed.log vazio.
+
+
+Iniciar o banco com o postgreSQL 9.2:
+/opt/PostgreSQL/9.2/bin/postgres -D /home/leandro.biondo/Downloads/car/postgresnfs/postgresql
+Instalar o Postgis 1.5.8 , extensão espacial usada no banco car_nacional . Passos:
+
+
+Dependências via yast:
+
+libxml2 (40 pacotes associados)
+
+Outras dependências (não disponiveis via yast ou apt-get):
+
+
+ActivePerl-5.14
+
+proj.4-4.9
+
+Necessário apontar local do pg_config do banco 9.2: ./configure --with-pgconfig=/opt/PostgreSQL/9.2/bin/pg_config
+Make , Make install e ok.
+
+
+criar um banco qualquer de testes, executar os SQL do postgis 1.5 neste banco:
+
+
+psql -h localhost -U leandro postgis_teste -f postgis.sql
+psql -h localhost -U leandro postgis_teste -f spatial_ref_sys.sql
+
+após habilitar a extensão no banco de teste, o banco sicar_nacional passa a funcionar normalmente (acesso via pgadmin ou qgis).
+
+
+Banco operacional, fazer um dump "correto" do banco, para migração de versão, no caso:
+
+
+~/dump_car> pg_dump -Fc -h localhost -U leandro car_nacional > car_nac_set15.dmp
+
+Estou fazendo este dump agora, está com 13GB e o tamanho final deve ser entre 70 e 120GB, em seguida para subir no ambiente "novo", necessário os seguintes passos:
+
+
+Criar um banco no PostgreSQL (no caso 9.3 ou 9.2), com extensão espacial instalada (postgis 2.0 ou 2.1), habilitar a extensão no banco novo com o seguinte SQL:
+
+CREATE EXTENSION postgis;
+CREATE EXTENSION postgis_topology;
+Por fim, recuperar o backup utilizando o script perl que acompanha o postgis da versão final que se deseja (hard upgrade http://postgis.net/docs/postgis_installation.html):
+
+
+perl cd /utils/postgis_restore.pl "/somepath/olddb.backup" | psql -h localhost -p 5432 -U postgres newdb 2> erros.txt
