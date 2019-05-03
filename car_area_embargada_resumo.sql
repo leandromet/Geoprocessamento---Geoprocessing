@@ -49,3 +49,18 @@ FROM
   proc_sfb.embargos_dados
 WHERE 
   st_intersects(remanescente_vegetacao_nativa.the_geom, embargos_dados.geom);
+  
+  
+  create table proc_sfb.embargos_consol as
+SELECT 
+gid, 
+gridcode, 
+classificacao, 
+estado, 
+the_geom
+FROM 
+  base_referencia.area_consolidada, 
+  proc_sfb.embargos_dados
+WHERE 
+  st_intersects(the_geom, embargos_dados.geom);
+
