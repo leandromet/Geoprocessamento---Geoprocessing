@@ -130,3 +130,17 @@ ST_SimplifyPreserveTopology( rel_tema_imovel_poligono.the_geom, 0.00002)
 where idt_tema = 1 and imovel.idt_municipio=municipio.idt_municipio and
 imovel.ind_status_imovel in ('AT', 'PE') and flg_ativo is true and
  rel_tema_imovel_poligono.idt_imovel = imovel.idt_imovel;
+ 
+ 
+ 
+ 
+ -----------------------------------------------
+ 
+ 
+ 
+create table geoserver.atlas_nascentes as select idt_rel_tema_imovel, rel_tema_imovel_ponto.idt_imovel, cod_imovel, idt_municipio as municipio_ibge
+from usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.rel_tema_imovel_ponto
+where idt_tema = 15 and ind_status_imovel in ( 'AT', 'PE') and imovel.idt_imovel = rel_tema_imovel_ponto.idt_imovel
+
+
+
