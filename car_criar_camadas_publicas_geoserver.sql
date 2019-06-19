@@ -137,10 +137,17 @@ imovel.ind_status_imovel in ('AT', 'PE') and flg_ativo is true and
  -----------------------------------------------
  
  
- 
-create table geoserver.atlas_nascentes as select idt_rel_tema_imovel, rel_tema_imovel_ponto.idt_imovel, cod_imovel, idt_municipio as municipio_ibge
-from usr_geocar_aplicacao.imovel, usr_geocar_aplicacao.rel_tema_imovel_ponto
-where idt_tema = 15 and ind_status_imovel in ( 'AT', 'PE') and imovel.idt_imovel = rel_tema_imovel_ponto.idt_imovel
+create table geoserver.atlas_nascentes as select
+
+idt_rel_tema_imovel, rel_tema_imovel_ponto.idt_imovel, 
+cod_imovel, imovel.idt_municipio as municipio_ibge, ind_tipo_imovel,  cod_estado as cod_uf, the_geom as geom
+from usr_geocar_aplicacao.imovel,  usr_geocar_aplicacao.rel_tema_imovel_ponto,
+usr_geocar_aplicacao.municipio
+where 
+
+idt_tema = 15 and ind_status_imovel in ( 'AT', 'PE') and
+municipio.idt_municipio = imovel.idt_municipio
+and imovel.idt_imovel = rel_tema_imovel_ponto.idt_imovel
 
 
 
