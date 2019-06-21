@@ -39,7 +39,7 @@ relatorio.quadro_area,
 usr_geocar_aplicacao.municipio,
  usr_geocar_aplicacao.resposta_imovel
 WHERE
-(num_area_app_recompor > 0 or num_area_reserva_legal_recompor_area_consolidada > 0 
+(num_area_app_recompor > 0 or num_area_reserva_legal_recompor > 0 or num_area_reserva_legal_recompor_area_consolidada > 0 
  or num_area_reserva_legal_recompor_area_antropizada > 0 or
 num_area_uso_restrito_recompor > 0 ) and
 imovel.ind_status_imovel in ('AT','PE') AND imovel.flg_ativo = TRUE and resposta_imovel.idt_resposta_pergunta IN (1,2) and
