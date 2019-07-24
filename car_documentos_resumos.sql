@@ -77,7 +77,19 @@ group by   documento.nom_documento,
   imovel.ind_status_imovel;
 
 
+-------------Resumo por UF e contagem
 
+
+create table proc_sfb.documentos_somas_tipos_uf as 
+
+select 
+cod_estado,
+count(cod_imovel),
+propriedade,posse,concessao,identificacao,atfa,outro
+
+from proc_sfb.documentos_somas_tipos
+group by cod_estado,
+propriedade,posse,concessao,identificacao,atfa,outro;
 
 
 ----totais por quantidades
