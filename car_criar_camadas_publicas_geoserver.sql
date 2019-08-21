@@ -45,7 +45,7 @@ idt_rel_tema_imovel,
  rel_tema_imovel_poligono.idt_imovel,
  round(rel_tema_imovel_poligono.num_area::numeric, 4) as area_ha,
  imovel.cod_imovel,
- imovel.idt_municipio,
+ imovel.idt_municipio as municipio_ibge,
 cod_estado,
  round(imovel.num_modulo_fiscal, 2) as mod_fiscal,
  imovel.dat_criacao as data_ref,
@@ -67,8 +67,8 @@ create table geoserver.tema_simp_2_rvn as select
 
 idt_rel_tema_imovel,
  rel_tema_imovel_poligono.idt_imovel,
-  imovel.idt_municipio,
  imovel.cod_imovel,
+  imovel.idt_municipio as municipio_ibge,
 cod_estado,
 ST_SimplifyPreserveTopology( rel_tema_imovel_poligono.the_geom, 0.00002)
 
@@ -88,6 +88,7 @@ create table geoserver.tema_simp_30_app as select
 idt_rel_tema_imovel,
  rel_tema_imovel_poligono.idt_imovel,
  imovel.cod_imovel,
+  imovel.idt_municipio as municipio_ibge,
 cod_estado,
 ST_SimplifyPreserveTopology( rel_tema_imovel_poligono.the_geom, 0.00002)
 
@@ -106,6 +107,7 @@ create table geoserver.tema_simp_32_rl as select
 idt_rel_tema_imovel,
  rel_tema_imovel_poligono.idt_imovel,
  imovel.cod_imovel,
+  imovel.idt_municipio as municipio_ibge,
 cod_estado,
 ST_SimplifyPreserveTopology( rel_tema_imovel_poligono.the_geom, 0.00002)
 
@@ -124,6 +126,7 @@ create table geoserver.tema_simp_1_consolidado as select
 idt_rel_tema_imovel,
  rel_tema_imovel_poligono.idt_imovel,
  imovel.cod_imovel,
+  imovel.idt_municipio as municipio_ibge,
 cod_estado,
 ST_SimplifyPreserveTopology( rel_tema_imovel_poligono.the_geom, 0.00002)
 
