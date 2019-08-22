@@ -114,5 +114,23 @@ ALTER TABLE geoserver.tema_simp_32_rl
     TABLESPACE sicar1;
     
 
+ALTER TABLE geoserver.atlas_nascentes
+    ADD CONSTRAINT pk_tema_simp_atlas_nascentes PRIMARY KEY (idt_rel_tema_imovel)
 
+    USING INDEX TABLESPACE sicar1;
+    
+    
+    ----criar indice da chave primaria
+ CREATE UNIQUE INDEX idx_btree_idt_atlas_nascentes
+    ON geoserver.atlas_nascentes USING btree
+    (idt_rel_tema_imovel ASC NULLS LAST)
+    INCLUDE(idt_rel_tema_imovel)
+    TABLESPACE sicar1   
+;
+    --- criar índice espacial
+    
+CREATE INDEX idx_gist_atlas_nascentes
+    ON geoserver.atlas_nascentes USING gist
+    (st_simplifypreservetopology)
+    TABLESPACE sicar1;
 
