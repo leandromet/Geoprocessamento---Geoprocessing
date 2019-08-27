@@ -88,3 +88,9 @@ create table proc_sfb.focos_class_consol_car as select distinct(id), gid, bioma,
 datahora,  focos_class_consol.geom from
 proc_sfb.focos_class_consol , geoserver.tema_simp_26_imovel
 where  st_intersects(focos_class_consol.geom, tema_simp_26_imovel.geom)
+
+
+create table proc_sfb.focos_class_consol_car_rl as select distinct(id), gid, bioma,focos_class_consol_car.idt_imovel,
+datahora,  focos_class_consol_car.geom from
+proc_sfb.focos_class_consol_car , geoserver.tema_simp_32_rl
+where  st_intersects(focos_class_consol_car.geom, tema_simp_32_rl.geom)
