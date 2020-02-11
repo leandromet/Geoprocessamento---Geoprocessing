@@ -1,4 +1,15 @@
+create table inma_processamento.simplif_2m_sigef as select id, parcela_co, rt, art, situacao_i, codigo_imo, status, ST_SimplifyPreserveTopology(geom, 0.00002)
+
+from dados_externos.incra_sigef_20200203
+
+
+
 select cod_estado, sum (area_ha) from car_publico.tema_simp_26_imovel group by cod_estado order by cod_estado
+
+
+create table inma_processamento.sigef_int_car_dist as select distinct on (id) id , idt_imovel, area_ha, tipo_imovel, parcela_co, rt, art, situacao_i, codigo_imo, status, simplif_2m_sigef.geom
+
+from inma_processamento.simplif_2m_sigef, car_publico.tema_simp_26_imovel where st_intersects (tema_simp_26_imovel.geom,simplif_2m_sigef.geom )
 
 
 select sum (area_ha) from car_publico.tema_simp_26_imovel
