@@ -30,3 +30,8 @@ car_publico.tema_simp_26_imovel group by cod_estado, tipo_imovel order by cod_es
 select cod_estado, tema_simp_26_imovel.tipo_imovel, count(tema_simp_26_imovel.idt_imovel) as registros , sum (tema_simp_26_imovel.area_ha) as area 
 from inma_processamento.car_int_sigef_dist,car_publico.tema_simp_26_imovel where 
 car_int_sigef_dist.idt_imovel = tema_simp_26_imovel.idt_imovel group by cod_estado, tema_simp_26_imovel.tipo_imovel order by cod_estado, tema_simp_26_imovel.tipo_imovel
+
+
+select cod_estado, tema_simp_26_imovel.tipo_imovel, count(tema_simp_26_imovel.idt_imovel) as registros , sum (tema_simp_26_imovel.area_ha) as area 
+from inma_processamento.sigef_int_car_dist,car_publico.tema_simp_26_imovel where 
+sigef_int_car_dist.idt_imovel = tema_simp_26_imovel.idt_imovel group by cod_estado, tema_simp_26_imovel.tipo_imovel order by cod_estado, tema_simp_26_imovel.tipo_imovel
