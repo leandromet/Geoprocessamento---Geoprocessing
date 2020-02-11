@@ -57,13 +57,11 @@ select nm_estado, count(id), situacao_i, status from
 inma_processamento.incra_uf group by nm_estado,situacao_i, status order by nm_estado,situacao_i, status
 
 
-
 create table inma_processamento.car_int_sigef_dist_not_touche as select distinct on (idt_imovel)  idt_imovel,id ,
 area_ha, tipo_imovel, parcela_co, rt, art, situacao_i, codigo_imo, status
-
 from inma_processamento.simplif_2m_sigef, car_publico.tema_simp_26_imovel where
 st_intersects (tema_simp_26_imovel.geom,simplif_2m_sigef.geom ) and
-not st_touches (tema_simp_26_imovel.geom,simplif_2m_sigef.geom )
+not st_touches (st_buffer(tema_simp_26_imovel.geom,0),st_buffer(simplif_2m_sigef.geom,0) ) 
 
 
 
