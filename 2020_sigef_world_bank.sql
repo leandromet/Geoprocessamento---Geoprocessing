@@ -55,3 +55,23 @@ dados_externos.ibge_br_uf_250gc_2018, dados_externos.incra_sigef_20200203 where 
 
 select nm_estado, count(id), situacao_i, status from
 inma_processamento.incra_uf group by nm_estado,situacao_i, status order by nm_estado,situacao_i, status
+
+
+
+create table inma_processamento.car_int_sigef_dist_not_touche as select distinct on (idt_imovel)  idt_imovel,id ,
+area_ha, tipo_imovel, parcela_co, rt, art, situacao_i, codigo_imo, status
+
+from inma_processamento.simplif_2m_sigef, car_publico.tema_simp_26_imovel where
+st_intersects (tema_simp_26_imovel.geom,simplif_2m_sigef.geom ) and
+not st_touches (tema_simp_26_imovel.geom,simplif_2m_sigef.geom )
+
+
+
+
+create table inma_processamento.intersection_sigef_car as select
+sigef_int_car_dist.idt_imovel, sigef_int_car_dist.id, sigef_int_car_dist.area_ha,
+sigef_int_car_dist.tipo_imovel, cod_estado, ST_intersection(car_int_sigef_dist.geom,sigef_int_car_dist.geom )
+from inma_processamento.car_int_sigef_dist, inma_processamento.sigef_int_car_dist, car_publico.tema_simp_26_imovel
+where car_int_sigef_dist.idt_imovel = tema_simp_26_imovel.idt_imovel and
+st_intersects(car_int_sigef_dist.geom,sigef_int_car_dist.geom ) and 
+not st_touches(car_int_sigef_dist.geom,sigef_int_car_dist.geom )
