@@ -35,3 +35,12 @@ car_int_sigef_dist.idt_imovel = tema_simp_26_imovel.idt_imovel group by cod_esta
 select cod_estado, tema_simp_26_imovel.tipo_imovel, count(tema_simp_26_imovel.idt_imovel) as registros , sum (tema_simp_26_imovel.area_ha) as area 
 from inma_processamento.sigef_int_car_dist,car_publico.tema_simp_26_imovel where 
 sigef_int_car_dist.idt_imovel = tema_simp_26_imovel.idt_imovel group by cod_estado, tema_simp_26_imovel.tipo_imovel order by cod_estado, tema_simp_26_imovel.tipo_imovel
+
+
+
+create table inma_processamento.incra_uf as select nm_estado, cd_geocuf, incra_sigef_20200203.id, situacao_i, status, municipio_ as municipio from
+dados_externos.ibge_br_uf_250gc_2018, dados_externos.incra_sigef_20200203 where uf_id = cd_geocuf::integer
+
+
+select nm_estado, count(id), situacao_i, status from
+inma_processamento.incra_uf group by nm_estado,situacao_i, status order by nm_estado,situacao_i, status
