@@ -81,3 +81,13 @@ sigef_int_car_dist.tipo_imovel, cod_estado, ST_intersection(car_int_sigef_distg.
 from inma_processamento.car_int_sigef_distg, inma_processamento.sigef_int_car_dist, car_publico.tema_simp_26_imovel
 where st_isvalid(car_int_sigef_distg.geom) and st_isvalid(sigef_int_car_dist.geom) and car_int_sigef_distg.idt_imovel = tema_simp_26_imovel.idt_imovel and
 st_intersects(car_int_sigef_distg.geom,sigef_int_car_dist.geom ) 
+
+select ST_GeometryType(geom) as tipo, count(idt_imovel) from inma_processamento.intersection_sigef_car_100k
+group by tipo
+
+create table inters_sigef_car_polig as select * from 
+inma_processamento.intersection_sigef_car_100k
+where ST_GeometryType(geom) 
+in ('ST_MultiPolygon','ST_Polygon')
+
+
