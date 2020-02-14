@@ -73,3 +73,11 @@ from inma_processamento.car_int_sigef_dist, inma_processamento.sigef_int_car_dis
 where car_int_sigef_dist.idt_imovel = tema_simp_26_imovel.idt_imovel and
 st_intersects(car_int_sigef_dist.geom,sigef_int_car_dist.geom ) and 
 not st_touches(car_int_sigef_dist.geom,sigef_int_car_dist.geom )
+
+
+create table inma_processamento.intersection_sigef_car_100k as select
+sigef_int_car_dist.idt_imovel, sigef_int_car_dist.id, sigef_int_car_dist.area_ha,
+sigef_int_car_dist.tipo_imovel, cod_estado, ST_intersection(car_int_sigef_distg.geom,sigef_int_car_dist.geom ) as geom
+from inma_processamento.car_int_sigef_distg, inma_processamento.sigef_int_car_dist, car_publico.tema_simp_26_imovel
+where st_isvalid(car_int_sigef_distg.geom) and st_isvalid(sigef_int_car_dist.geom) and car_int_sigef_distg.idt_imovel = tema_simp_26_imovel.idt_imovel and
+st_intersects(car_int_sigef_distg.geom,sigef_int_car_dist.geom ) 
