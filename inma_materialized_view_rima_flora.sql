@@ -5,6 +5,35 @@
 CREATE MATERIALIZED VIEW rima_geoserver.pontos_flora_niveis
 TABLESPACE pg_default
 AS
+ SELECT pontos_flora.phylum,
+    pontos_flora.ordem,
+    pontos_flora.class,
+    pontos_flora.family,
+    pontos_flora.genus,
+    count(*) AS num_gen
+   FROM rima_geoserver.pontos_flora
+  GROUP BY pontos_flora.phylum, pontos_flora.ordem, pontos_flora.class, pontos_flora.family, pontos_flora.genus
+  ORDER BY pontos_flora.phylum, pontos_flora.class, pontos_flora.ordem, pontos_flora.family
+WITH DATA;
+
+ALTER TABLE rima_geoserver.pontos_flora_niveis
+    OWNER TO postgres;
+
+
+
+
+
+
+
+
+
+-- View: rima_geoserver.pontos_flora_niveis
+
+-- DROP MATERIALIZED VIEW rima_geoserver.pontos_flora_niveis;
+
+CREATE MATERIALIZED VIEW rima_geoserver.pontos_flora_niveis
+TABLESPACE pg_default
+AS
  SELECT DISTINCT table4.phylum,
     table4.class,
     table4.ordem,
