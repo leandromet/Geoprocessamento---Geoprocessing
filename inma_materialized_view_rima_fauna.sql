@@ -1,8 +1,8 @@
 -- View: rima_geoserver.postos_fauna_niveis
 
--- DROP MATERIALIZED VIEW rima_geoserver.postos_fauna_niveis;
+-- DROP MATERIALIZED VIEW rima_geoserver.pontos_fauna_niveis;
 
-CREATE MATERIALIZED VIEW rima_geoserver.postos_fauna_niveis
+CREATE MATERIALIZED VIEW rima_geoserver.pontos_fauna_niveis
 TABLESPACE pg_default
 AS
  SELECT DISTINCT table5.phylum,
@@ -52,5 +52,5 @@ AS
   ORDER BY table5.phylum, table5.class, table5.ordem, table5.family
 WITH DATA;
 
-ALTER TABLE rima_geoserver.postos_fauna_niveis
+ALTER TABLE rima_geoserver.pontos_fauna_niveis
     OWNER TO postgres;
