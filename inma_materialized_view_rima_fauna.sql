@@ -1,3 +1,32 @@
+
+-- View: rima_geoserver.pontos_fauna_niveis
+
+-- DROP MATERIALIZED VIEW rima_geoserver.pontos_fauna_niveis;
+
+CREATE MATERIALIZED VIEW rima_geoserver.pontos_fauna_niveis
+TABLESPACE pg_default
+AS
+ SELECT pontos_fauna.phylum,
+    pontos_fauna.class,
+    pontos_fauna.ordem,
+    pontos_fauna.family,
+    pontos_fauna.genus,
+    pontos_fauna.species,
+    count(*) AS num_gen
+   FROM rima_geoserver.pontos_fauna
+  GROUP BY pontos_fauna.genus, pontos_fauna.phylum, pontos_fauna.ordem, pontos_fauna.class, pontos_fauna.family, pontos_fauna.species
+  ORDER BY pontos_fauna.phylum, pontos_fauna.class, pontos_fauna.ordem, pontos_fauna.family
+WITH DATA;
+
+ALTER TABLE rima_geoserver.pontos_fauna_niveis
+    OWNER TO postgres;
+
+
+
+
+
+
+
 -- View: rima_geoserver.postos_fauna_niveis
 
 -- DROP MATERIALIZED VIEW rima_geoserver.pontos_fauna_niveis;
