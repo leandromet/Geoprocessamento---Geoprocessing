@@ -1,0 +1,19 @@
+processing.run("qgis:rasterlayerhistogram", {'INPUT':'C:/Users/leandro.biondo/Documents/regenera/geo/mapbiomas_85-00mais10-19.tif','BAND':1,'BINS':10,'OUTPUT':'C:/Users/leandro.biondo/Documents/regenera/geo/histograma_floresta_areas.html'})
+processing.run("gdal:polygonize", {'INPUT':'D:/regenera/mapbiomas_flor_15_19mais_85_00.tif','BAND':1,'FIELD':'DN','EIGHT_CONNECTEDNESS':False,'EXTRA':'','OUTPUT':'C:/Users/leandro.biondo/Documents/regenera/geo/floresta_mapbiomas_ref.gpkg'})
+processing.run("gdal:cliprasterbymasklayer", {'INPUT':'D:/regenera/mapbiomas_flor_15_19mais_85_00.tif','MASK':'C:/Users/leandro.biondo/Documents/regenera/geo/area_potencial_suz_uc.shp','SOURCE_CRS':None,'TARGET_CRS':None,'NODATA':None,'ALPHA_BAND':False,'CROP_TO_CUTLINE':True,'KEEP_RESOLUTION':False,'SET_RESOLUTION':False,'X_RESOLUTION':None,'Y_RESOLUTION':None,'MULTITHREADING':False,'OPTIONS':'','DATA_TYPE':0,'EXTRA':'','OUTPUT':'TEMPORARY_OUTPUT'})
+processing.run("native:buffer", {'INPUT':'memory://MultiPolygon?crs=EPSG:4674&field=ID_UC0:string(254,0)&field=NOME_UC1:string(254,0)&field=ID_WCMC2:string(254,0)&field=CATEGORI3:string(254,0)&field=GRUPO4:string(254,0)&field=ESFERA5:string(254,0)&field=ANO_CRIA6:string(254,0)&field=GID7:string(254,0)&field=QUALIDAD8:string(254,0)&field=ATO_LEGA9:string(254,0)&field=DT_ULTIM10:string(254,0)&field=CODIGO_U11:string(254,0)&field=NOME_ORG12:string(254,0)&field=recibo:string(254,0)&field=area:double(32,31)&field=tema:string(254,0)&field=tipo:string(254,0)&field=layer:string(254,0)&field=path:string(254,0)&uid={4cfc9cda-0300-414c-a674-cb84522dfcb8}','DISTANCE':0.005,'SEGMENTS':5,'END_CAP_STYLE':0,'JOIN_STYLE':0,'MITER_LIMIT':2,'DISSOLVE':True,'OUTPUT':'C:/Users/leandro.biondo/Documents/regenera/geo/area_potencial_suz_uc.shp'})
+processing.run("native:mergevectorlayers", {'LAYERS':['regenera_ucs.shp|layername=regenera_ucs','C:/Users/leandro.biondo/Documents/regenera/geo/suzano_bahia.shp|layername=suzano_bahia','C:/Users/leandro.biondo/Documents/regenera/geo/suzano_espirito_santo.shp|layername=suzano_espirito_santo'],'CRS':None,'OUTPUT':'TEMPORARY_OUTPUT'})
+processing.run("native:rasterlayeruniquevaluesreport", {'INPUT':'D:/regenera/mapbiomas_flor_15_19mais_85_00.tif','BAND':1,'OUTPUT_HTML_FILE':'C:/Users/leandro.biondo/Documents/regenera/geo/report_85-00_15-19.html'})
+processing.run("qgis:basicstatisticsforfields", {'INPUT_LAYER':'D:/regenera/estudo_area_candidatas/imoveis_suzano.shp','FIELD_NAME':'area','OUTPUT_HTML_FILE':'TEMPORARY_OUTPUT'})
+
+raster calculator
+("COLECAO_5_DOWNLOADS_COLECOES_ANUAL_MATAATLANTICA_MATAATLANTICA-1985@1" != 3 OR "COLECAO_5_DOWNLOADS_COLECOES_ANUAL_MATAATLANTICA_MATAATLANTICA-1990@1" != 3 OR "COLECAO_5_DOWNLOADS_COLECOES_ANUAL_MATAATLANTICA_MATAATLANTICA-1995@1" != 3 OR"COLECAO_5_DOWNLOADS_COLECOES_ANUAL_MATAATLANTICA_MATAATLANTICA-2000@1"  != 3  OR "COLECAO_5_DOWNLOADS_COLECOES_ANUAL_MATAATLANTICA_MATAATLANTICA-2005@1"  != 3 OR "COLECAO_5_DOWNLOADS_COLECOES_ANUAL_MATAATLANTICA_MATAATLANTICA-2010@1")*3
+
+
+GDAL command:
+gdalwarp -of GTiff -cutline C:/Users/leandro.biondo/Documents/regenera/geo/area_potencial_suz_uc.shp -cl area_potencial_suz_uc -crop_to_cutline D:/regenera/mapbiomas_flor_15_19mais_85_00.tif C:/Users/leandro.biondo/AppData/Local/Temp/processing_YXUpQa/8c7ff763005c4f239b99e577c2ba96f3/OUTPUT.tif
+
+
+
+
+https://queimadas.dgi.inpe.br/queimadas/geoserver/wms?SERVICE=WMS&VERSION=1.1.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=bdqueimadas%3Afocos&TILED=true&CQL_FILTER=data_hora_gmt%20between%202021-11-30T00%3A00%3A00%20and%202021-12-01T23%3A59%3A59%20AND%20satelite%20in%20(%27AQUA_M-T%27)%20AND%20continente_id%20%3D%208%20AND%20id_area_industrial%20%3D%200%20AND%20id_tipo_area_industrial%20NOT%20IN%20(1%2C%202%2C%203%2C%204%2C%205)&WIDTH=256&HEIGHT=256&SRS=EPSG%3A4326&STYLES=&BBOX=0%2C-45%2C45%2C0
