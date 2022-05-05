@@ -1,3 +1,6 @@
+#Simple method for converting specieslink data in JSON format to a CSV that can be opened in QGIS as comma separated vector file.
+#You may then open in QGIS and convert to another format, in my case will be uploading to a PostGIS database.
+
 import os
 import json
 from pathlib import Path
