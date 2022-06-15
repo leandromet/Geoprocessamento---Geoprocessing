@@ -1,0 +1,18 @@
+#!/bin/bash
+
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.zip'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z01'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z02'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z03'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z04'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z05'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z06'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z07'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z08'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z09'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z10'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z11'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z12'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z13'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z14'
+ wget 'https://geobases.static.es.gov.br/minio/public/ORTOFOTOMOSAICO_ES_2007_2008/ORTOFOTOMOSAICO_ES_2007_2008_6BL_ECW.z15'
